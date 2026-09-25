@@ -1,0 +1,19 @@
+{
+  "name": "@omega/workspace",
+  "private": true,
+  "packageManager": "yarn@4.18.1",
+  "workspaces": [
+    "web/apps/*",
+    "web/packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --write README.md package.json .yarnrc.yml .prettierrc.json '.vscode/*.json' 'web/**/*.{json,js,ts,tsx,html,css}' 'docs/stage1/*.md'",
+    "format:check": "prettier --check README.md package.json .yarnrc.yml .prettierrc.json '.vscode/*.json' 'web/**/*.{json,js,ts,tsx,html,css}' 'docs/stage1/*.md'",
+    "typecheck": "yarn workspaces foreach -A --exclude @omega/workspace run typecheck",
+    "lint": "yarn workspaces foreach -A --exclude @omega/workspace run lint",
+    "build": "yarn workspaces foreach -A --exclude @omega/workspace --topological-dev run build"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9"
+  }
+}
