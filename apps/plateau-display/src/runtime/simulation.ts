@@ -65,7 +65,7 @@ export function sampleAt(series: Series, timestamp: number, revision=0, seed=DEF
 }
 export interface RuntimeResult { requestId: string; revision: number; simulationVersion: typeof SIMULATION_VERSION; timestamp: number }
 export interface SnapshotResult extends RuntimeResult { samples: Sample[]; units: Record<string,string> }
-export interface SeriesResult extends RuntimeResult { seriesId: string; metricId: MetricId; unit: string; from: number; to: number; samples: Sample[] }
+export interface SeriesResult extends RuntimeResult { seriesId: string; metricId: MetricId; unit: string; from: number; to: number; samples: Sample[]; dailyCumulative?: Sample[]; aggregationMs?: number }
 export interface ProfileResult extends RuntimeResult { boreholeId: string; metricId: MetricId; unit: string; points: Array<{pointId:string; depthM:number; sample:Sample}> }
 export interface StatisticsResult extends RuntimeResult { stats: CatalogStats; totalSamples: string }
 export interface RuntimeState { timestamp: number; revision: number; speed: 1|10|60; paused: boolean; seed: number }
@@ -92,6 +92,29 @@ export class SimulationRuntime {
   querySeries(requestId:string, seriesId:string, from:number, to:number, maxPoints=1200):SeriesResult {
     if(to<from || to>this.clock.timestamp || from<this.clock.timestamp-MAX_HISTORY_MS) throw new RangeError('Query outside available simulation history');
     const s=this.series(seriesId), budget=Math.max(2,Math.min(maxPoints,2400));
+    if(s.metricId==='rainfall') {
+      const period=s.samplePeriodMs;
+      const aggregationMs=Math.ceil(Math.max(period,(to-from)/budget)/period)*period;
+      const dayStart=(time:number)=>Math.floor((time+8*3600000)/86400000)*86400000-8*3600000;
+      const samples:Sample[]=[],dailyCumulative:Sample[]=[];
+      let cumulative=0;
+      let currentDay=dayStart(from);
+      let bucket=0;
+      let bucketEnd=Math.min(to,from+aggregationMs);
+      for(let time=Math.ceil(currentDay/period)*period;time<=to;time+=period) {
+        if(dayStart(time)!==currentDay){currentDay=dayStart(time);cumulative=0;}
+        const value=valueAt(s,time,this.clock.seed,this.pointDepth.get(s.pointId)??0);
+        cumulative+=value;
+        if(time>=from) bucket+=value;
+        if(time>=bucketEnd || time+period>to) {
+          const timestamp=alignedTime(Math.min(time,to),period);
+          samples.push({seriesId:s.id,timestamp,value:bucket,quality:'valid',revision:this.clock.revision,simulationVersion:SIMULATION_VERSION});
+          dailyCumulative.push({seriesId:s.id,timestamp,value:cumulative,quality:'valid',revision:this.clock.revision,simulationVersion:SIMULATION_VERSION});
+          bucket=0;bucketEnd=Math.min(to,bucketEnd+aggregationMs);
+        }
+      }
+      return {requestId,revision:this.clock.revision,simulationVersion:SIMULATION_VERSION,timestamp:this.clock.timestamp,seriesId,metricId:s.metricId,unit:metricById[s.metricId].unit,from,to,samples,dailyCumulative,aggregationMs};
+    }
     const period=isEventMetric(s.metricId)?10000:s.samplePeriodMs;
     const count=Math.floor((to-from)/period)+1;
     const depth=this.pointDepth.get(s.pointId)??0;

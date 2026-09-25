@@ -52,6 +52,30 @@ describe('simulation contract',()=>{
     }
     expect(circularMeanDegrees([359,1])).toBeCloseTo(0,5);
   });
+  it('returns rainfall bucket totals and Beijing-day cumulative values',()=>{
+    const rain=seriesFor('rainfall');
+    const end=START_TIME+24*3600000;
+    const clock=new SimulationRuntime(catalog,DEFAULT_SEED,end);
+    const result=clock.querySeries('rain',rain.id,end-3600000,end,120);
+    expect(result.samples).toHaveLength(result.dailyCumulative!.length);
+    expect(result.samples.length).toBeLessThanOrEqual(120);
+    expect(result.aggregationMs).toBeGreaterThan(rain.samplePeriodMs);
+    const raw=[];
+    for(let time=end-3600000;time<=end;time+=rain.samplePeriodMs)raw.push(sampleAt(rain,time,0,DEFAULT_SEED).value!);
+    const bucketSum=result.samples.reduce((sum,sample)=>sum+(sample.value??0),0);
+    expect(bucketSum).toBeCloseTo(raw.reduce((sum,value)=>sum+value,0),5);
+    expect(result.dailyCumulative!.every((sample,index,array)=>index===0||(sample.value??0)>=(array[index-1].value??0))).toBe(true);
+  });
+  it('bounds a 30-day rainfall result',()=>{
+    const rain=seriesFor('rainfall');
+    const end=START_TIME+30*86400000;
+    const clock=new SimulationRuntime(catalog,DEFAULT_SEED,end);
+    const started=performance.now();
+    const result=clock.querySeries('rain-month',rain.id,end-30*86400000,end,1200);
+    expect(result.samples.length).toBeLessThanOrEqual(1200);
+    expect(result.dailyCumulative).toHaveLength(result.samples.length);
+    expect(performance.now()-started).toBeLessThan(3000);
+  });
   it('queries a month of vehicle events with bounded output and latency',()=>{
     const series=seriesFor('axle_load'),end=START_TIME+30*86400000;runtime.control({timestamp:end});
     const started=performance.now(),result=runtime.querySeries('month',series.id,START_TIME,end,1200);
