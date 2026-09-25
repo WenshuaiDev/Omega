@@ -109,7 +109,9 @@ Yarn 使用 node-modules，依赖目录、缓存、安装状态和产物均忽�
 对应[官方并行方案](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0)。
 
 VS Code 安装工作区推荐的 [TypeScript 7 官方扩展](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview)，
-在命令面板启用 TypeScript 7 Language Server。扩展应使用项目中安装的 TS7；
+从仓库根目录打开工作区，在命令面板执行 `TypeScript: Enable TypeScript 7`。
+已提交的 `.vscode/settings.json` 启用 `js/ts.experimental.useTsgo`，
+并通过 `js/ts.tsdk.path` 指向 `./node_modules/@typescript/native`（项目安装的 TS7 别名包）；
 不要把 `typescript/lib` 兼容 API 指定为编辑器 SDK，也不生成 PnP Yarn SDK。
 CLI 验收与编辑器实际运行分别记录，其他编辑器不在本阶段验收范围。
 

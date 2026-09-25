@@ -1,0 +1,313 @@
+Captured 2026-09-25. Source dfe96d927d6542227d770ce75d1b6c872d9a5a5c.
+Individual command logs from scripts/acceptance.sh.
+
+===== bootstrap-first.log =====
+corepack yarn install --immutable
+➤ YN0000: · Yarn 4.18.1
+➤ YN0000: ┌ Resolution step
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0066: │ typescript@patch:@typescript/typescript6@npm%3A6.0.2#optional!builtin<compat/typescript>::version=6.0.2&hash=5786d5: ENOENT: no such file or directory, lstat '/node_modules/typescript/lib/_tsc.js'
+➤ YN0013: │ 136 packages were added to the project (+ 121.77 MiB).
+➤ YN0000: └ Completed in 2s 534ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed in 1s 14ms
+➤ YN0000: · Done with warnings in 3s 622ms
+
+===== bootstrap-repeat.log =====
+corepack yarn install --immutable
+➤ YN0000: · Yarn 4.18.1
+➤ YN0000: ┌ Resolution step
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed
+➤ YN0000: · Done in 0s 174ms
+
+===== build-restored.log =====
+corepack yarn build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.31 kB │ gzip:  0.23 kB
+dist/assets/index-CD2Y-Bse.js  219.73 kB │ gzip: 68.67 kB
+
+✓ built in 79ms
+Done in 0s 198ms
+
+===== build.log =====
+corepack yarn build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.31 kB │ gzip:  0.23 kB
+dist/assets/index-CD2Y-Bse.js  219.73 kB │ gzip: 68.67 kB
+
+✓ built in 85ms
+Done in 0s 228ms
+
+===== check-baseline.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+?   	github.com/WenshuaiDev/Omega/libs/buildinfo	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/example-service/cmd/example-service	[no test files]
+corepack yarn typecheck
+Version 7.0.2
+Done in 0s 309ms
+corepack yarn lint
+Done in 1s 102ms
+
+===== check-readonly.log =====
+
+===== check-restored.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+?   	github.com/WenshuaiDev/Omega/libs/buildinfo	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/example-service/cmd/example-service	[no test files]
+corepack yarn typecheck
+Version 7.0.2
+Done in 0s 317ms
+corepack yarn lint
+Done in 0s 638ms
+
+===== compiler.log =====
+Version 7.0.2
+
+===== format-error.log =====
+corepack yarn format:check
+Checking formatting...
+[warn] web/apps/example-web/src/main.tsx
+[warn] Code style issues found in the above file. Run Prettier with --write to fix.
+make: *** [Makefile:24: check] Error 1
+
+===== format-repair.log =====
+corepack yarn format
+README.md 39ms (unchanged)
+package.json 7ms (unchanged)
+.yarnrc.yml 6ms (unchanged)
+.prettierrc.json 1ms (unchanged)
+.vscode/extensions.json 1ms (unchanged)
+web/apps/example-web/eslint.config.js 3ms (unchanged)
+web/apps/example-web/index.html 11ms (unchanged)
+web/apps/example-web/package.json 1ms (unchanged)
+web/apps/example-web/src/main.tsx 18ms
+web/apps/example-web/tsconfig.json 1ms (unchanged)
+docs/stage1/acceptance.md 2ms (unchanged)
+
+===== format-restored.log =====
+
+===== go-build-error.log =====
+# github.com/WenshuaiDev/Omega/services/example-service/cmd/example-service
+services/example-service/cmd/example-service/main.go:10:61: undefined: buildinfo.DoesNotExist
+make: *** [Makefile:32: build] Error 1
+
+===== go-format-error.log =====
+Go format errors (run make fmt):
+services/example-service/cmd/example-service/main.go
+make: *** [Makefile:23: check] Error 1
+
+===== go-format-repair.log =====
+cmd/example-service/main.go
+corepack yarn format
+README.md 38ms (unchanged)
+package.json 7ms (unchanged)
+.yarnrc.yml 6ms (unchanged)
+.prettierrc.json 1ms (unchanged)
+.vscode/extensions.json 1ms (unchanged)
+web/apps/example-web/eslint.config.js 3ms (unchanged)
+web/apps/example-web/index.html 11ms (unchanged)
+web/apps/example-web/package.json 1ms (unchanged)
+web/apps/example-web/src/main.tsx 18ms (unchanged)
+web/apps/example-web/tsconfig.json 1ms (unchanged)
+docs/stage1/acceptance.md 2ms (unchanged)
+
+===== go-format-restored.log =====
+
+===== go-test-error.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+--- FAIL: TestAcceptanceFailure (0.00s)
+    injected_test.go:6: acceptance injected failure
+FAIL
+FAIL	github.com/WenshuaiDev/Omega/libs/buildinfo	0.003s
+FAIL
+make: *** [Makefile:25: check] Error 1
+
+===== ignored.log =====
+services/example-service/.env.local
+web/apps/example-web/.env.local
+node_modules
+web/apps/example-web/dist
+build
+
+===== immutable-install.log =====
+corepack yarn install --immutable
+➤ YN0000: · Yarn 4.18.1
+➤ YN0000: ┌ Resolution step
+➤ YN0085: │ + prettier@npm:3.9.8
+➤ YN0085: │ - prettier@npm:3.9.9
+➤ YN0000: └ Completed in 0s 880ms
+
+➤ YN0000: ┌ Post-resolution validation
+➤ YN0000: │ @@ -192,9 +192,9 @@
+➤ YN0000: │  "@omega/workspace@workspace:.":
+➤ YN0000: │    version: 0.0.0-use.local
+➤ YN0000: │    resolution: "@omega/workspace@workspace:."
+➤ YN0000: │    dependencies:
+➤ YN0028: │ -    prettier: "npm:3.9.9"
+➤ YN0028: │ +    prettier: "npm:3.9.8"
+➤ YN0000: │    languageName: unknown
+➤ YN0000: │    linkType: soft
+➤ YN0000: │  
+➤ YN0000: │  "@oxc-project/types@npm:=0.151.0":
+➤ YN0000: │ @@ -1460,14 +1460,13 @@
+➤ YN0000: │    checksum: 10c0/b00d617431e7886c520a6f498a2e14c75ec58f6d93ba48c3b639cf241b54232d90daa05d83a9e9b9fef6baa63cb7e1e4602c2372fea5bc169668401eb127d0cd
+➤ YN0000: │    languageName: node
+➤ YN0000: │    linkType: hard
+➤ YN0000: │  
+➤ YN0028: │ -"prettier@npm:3.9.9":
+➤ YN0028: │ -  version: 3.9.9
+➤ YN0028: │ -  resolution: "prettier@npm:3.9.9"
+➤ YN0028: │ +"prettier@npm:3.9.8":
+➤ YN0028: │ +  version: 3.9.8
+➤ YN0028: │ +  resolution: "prettier@npm:3.9.8"
+➤ YN0000: │    bin:
+➤ YN0000: │      prettier: bin/prettier.cjs
+➤ YN0028: │ -  checksum: 10c0/d50ea2537b2ff7dbd5088a214f4d936484e55c665cea2185b477a55b0770be55f3b156a71f63a9a639def6b334667bb327139dc85f2a1041c0a34752cdc74647
+➤ YN0000: │    languageName: node
+➤ YN0000: │    linkType: hard
+➤ YN0000: │  
+➤ YN0000: │  "proc-log@npm:^7.0.0":
+➤ YN0000: │ 
+➤ YN0028: │ The lockfile would have been modified by this install, which is explicitly forbidden.
+➤ YN0000: └ Completed
+➤ YN0000: · Failed with errors in 0s 900ms
+make: *** [Makefile:16: bootstrap] Error 1
+
+===== immutable-sources.log =====
+
+===== lint-api.log =====
+6.0.3
+
+===== lint-error.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+?   	github.com/WenshuaiDev/Omega/libs/buildinfo	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/example-service/cmd/example-service	[no test files]
+corepack yarn typecheck
+Version 7.0.2
+Done in 0s 307ms
+corepack yarn lint
+
+/evidence/omega-acceptance.Rc2jsZ/repo/web/apps/example-web/src/main.tsx
+  4:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 1 problem (1 error, 0 warnings)
+
+The command failed in workspace @omega/example-web@workspace:web/apps/example-web with exit code 1
+Failed with errors in 0s 659ms
+make: *** [Makefile:27: check] Error 1
+
+===== missing-corepack.log =====
+Missing corepack. Install the pinned version first; see README.md, prerequisites.
+make: *** [Makefile:12: toolchain] Error 1
+
+===== missing-go.log =====
+Missing go. Install the pinned version first; see README.md, prerequisites.
+make: *** [Makefile:12: toolchain] Error 1
+
+===== missing-node.log =====
+Missing node. Install the pinned version first; see README.md, prerequisites.
+make: *** [Makefile:12: toolchain] Error 1
+
+===== platform.log =====
+Linux aarch64
+dfe96d927d6542227d770ce75d1b6c872d9a5a5c
+go version go1.27.1 linux/arm64
+v26.10.0
+0.36.0
+
+===== service.log =====
+Omega example-service version=devel
+
+===== source-restored.log =====
+
+===== type-error.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+?   	github.com/WenshuaiDev/Omega/libs/buildinfo	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/example-service/cmd/example-service	[no test files]
+corepack yarn typecheck
+Version 7.0.2
+src/main.tsx(4,7): error TS2322: Type 'number' is not assignable to type 'string'.
+The command failed in workspace @omega/example-web@workspace:web/apps/example-web with exit code 1
+Failed with errors in 0s 299ms
+make: *** [Makefile:26: check] Error 1
+
+===== vet-error.log =====
+corepack yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+?   	github.com/WenshuaiDev/Omega/libs/buildinfo	[no test files]
+cmd/example-service/main.go:10:44: fmt.Printf format %d has arg buildinfo.Version() of wrong type string
+make: *** [Makefile:25: check] Error 1
+
+===== web-build-error.log =====
+corepack yarn build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 4 modules transformed.
+✗ Build failed in 26ms
+error during build:
+Build failed with 1 error:
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve './missing-acceptance-file' in src/main.tsx
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/main.tsx:8:8 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m8 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m"./missing-acceptance-file"[38;5;249m;[0m
+ [38;5;240m  │[0m        ─────────────┬─────────────  
+ [38;5;240m  │[0m                     ╰─────────────── Module not found.
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: 'src/main.tsx' is imported by the following path:
+ [38;5;240m  │[0m         - src/main.tsx
+ [38;5;240m  │[0m         - index.html
+[38;5;246m───╯[0m
+
+    at aggregateBindingErrorsIntoJsError (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/rolldown/dist/shared/error-CPs15XSr.mjs:48:18)
+    at unwrapBindingResult (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/rolldown/dist/shared/error-CPs15XSr.mjs:18:128)
+    at #build (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/rolldown/dist/shared/rolldown-BCho_JNF.mjs:133:34)
+    at async buildEnvironment (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/vite/dist/node/chunks/node.js:34445:66)
+    at async Object.build (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/vite/dist/node/chunks/node.js:34866:19)
+    at async Object.buildApp (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/vite/dist/node/chunks/node.js:34863:153)
+    at async CAC.<anonymous> (file:///evidence/omega-acceptance.Rc2jsZ/repo/node_modules/vite/dist/node/cli.js:780:3) {
+  errors: [Getter/Setter]
+}
+The command failed in workspace @omega/example-web@workspace:web/apps/example-web with exit code 1
+The command failed for workspaces that are depended upon by other workspaces; can't satisfy the dependency graph
+Failed with errors in 0s 144ms
+make: *** [Makefile:33: build] Error 1
+
+===== wrong-corepack.log =====
+Corepack version mismatch: expected 0.36.0, got 0.0.0.
+Install/select Corepack 0.36.0 in PATH; see README.md, prerequisites. No global tools were changed.
+make: *** [Makefile:12: toolchain] Error 1
+
+===== wrong-go.log =====
+Go version mismatch: expected go1.27.1, got 0.0.0.
+Install/select Go go1.27.1 in PATH; see README.md, prerequisites. No global tools were changed.
+make: *** [Makefile:12: toolchain] Error 1
+
+===== wrong-node.log =====
+Node version mismatch: expected v26.10.0, got 0.0.0.
+Install/select Node v26.10.0 in PATH; see README.md, prerequisites. No global tools were changed.
+make: *** [Makefile:12: toolchain] Error 1
