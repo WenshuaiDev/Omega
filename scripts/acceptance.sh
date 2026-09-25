@@ -122,7 +122,7 @@ git restore -- "$web"
 # Exercise actual prerequisite diagnostics with only external command wrappers.
 mkdir "$evidence/bin"
 make_bin=$(command -v make)
-for tool in dirname cat go node corepack; do
+for tool in sh dirname cat go node corepack; do
 	ln -s "$(command -v "$tool")" "$evidence/bin/$tool"
 done
 for tool in go node corepack; do
