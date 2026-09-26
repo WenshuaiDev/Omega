@@ -21,7 +21,7 @@ case "$ENVIRONMENT" in test|prod) ;; *) fail 'explicit --env test or prod requir
 [ -n "$INPUT" ] && [ -n "$VERSION" ] || fail '--input and --version required'
 prerequisites
 [ "$(uname -s)" = Linux ] && [ "$(uname -m)" = x86_64 ] || fail 'target host must be Linux amd64; run on target, not development macOS'
-[ "$(docker info --format '{{.OSType}}/{{.Architecture}}')" = linux/x86_64 ] || fail 'target Docker daemon must be Linux amd64'
+[ "$(bounded 15 docker info --format '{{.OSType}}/{{.Architecture}}')" = linux/x86_64 ] || fail 'target Docker daemon must be Linux amd64'
 verify_manifest "$BUNDLE" "$TRUSTED"
 [ "$VERSION" = "$RELEASE_VERSION" ] || fail 'explicit version differs from verified release'
 verify_images
@@ -42,20 +42,22 @@ cleanup() {
   local code=$? lock
   trap - EXIT INT TERM
   [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
-  [ -z "$TASK" ] || docker rm -f "$TASK" >/dev/null 2>&1 || true
+  [ -z "$TASK" ] || bounded 15 docker rm -f "$TASK" >/dev/null 2>&1 || true
   if [ "$code" -ne 0 ] && [ "$MAINTENANCE" = true ]; then touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; fi
+  # Release owned locks before best-effort read-only diagnostics; an unavailable
+  # daemon must not prevent a later retry after it recovers.
+  for lock in "${LOCKS[@]}"; do
+    if [ -f "$lock/owner" ] && [ "$(cat "$lock/owner")" = "$TOKEN" ]; then rm -f "$lock/owner"; rmdir "$lock" 2>/dev/null || true; fi
+  done
   if [ -n "$RUN_DIR" ]; then
     printf '%s\texit=%s\tphase=%s\n' "$(date -u +%FT%TZ)" "$code" "$STAGE" >> "$RUN_DIR/journal.tsv"
     compose ps --all --format json > "$RUN_DIR/containers.json" 2>/dev/null || true
     for service in db api web console edge; do
       cid=$(compose ps --all -q "$service" 2>/dev/null) || continue
-      [ -z "$cid" ] || docker inspect --format '{{.Name}} {{.Image}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$cid" >> "$RUN_DIR/actual-images.txt" 2>/dev/null || true
+      [ -z "$cid" ] || bounded 5 docker inspect --format '{{.Name}} {{.Image}} {{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$cid" >> "$RUN_DIR/actual-images.txt" 2>/dev/null || true
     done
     compose logs --no-color --tail 100 > "$RUN_DIR/services.log" 2>&1 || true
   fi
-  for lock in "${LOCKS[@]}"; do
-    if [ -f "$lock/owner" ] && [ "$(cat "$lock/owner")" = "$TOKEN" ]; then rm -f "$lock/owner"; rmdir "$lock" 2>/dev/null || true; fi
-  done
   if [ "$code" -ne 0 ]; then echo "Release failed at $STAGE (exit $code). Maintenance=$MAINTENANCE; data retained. Evidence: $RUN_DIR" >&2; fi
   exit "$code"
 }
@@ -86,7 +88,7 @@ for key in DOCKER_HOST DOCKER_CONTEXT DOCKER_CONFIG DOCKER_TLS_VERIFY DOCKER_CER
 VARS=("OMEGA_INPUT_DIR=$INPUT" "OMEGA_SOURCE_DIR=$MATERIALS" "OMEGA_INSTANCE_ID=$INSTANCE_ID" "OMEGA_ENVIRONMENT=$ENVIRONMENT" "OMEGA_HTTP_PORT=$HTTP_PORT" "OMEGA_HTTPS_PORT=$HTTPS_PORT" "OMEGA_DOMAIN=$DOMAIN" "OMEGA_VERSION=$VERSION" "OMEGA_UID=10001" "OMEGA_GID=10001")
 for i in "${!IMAGE_ROLES[@]}"; do key=$(printf '%s' "${IMAGE_ROLES[$i]}" | tr '[:lower:]' '[:upper:]'); VARS+=("OMEGA_${key}_IMAGE=${IMAGE_IDS[$i]}"); done
 COMPOSE=("${CLEAN[@]}" "${VARS[@]}" docker compose --project-name "$PROJECT" --project-directory "$MATERIALS" --env-file /dev/null -f "$MATERIALS/compose.yaml" -f "$MATERIALS/compose.release.yaml" -f "$MATERIALS/compose.$ENVIRONMENT.yaml")
-compose() { "${COMPOSE[@]}" "$@"; }
+compose() { bounded 15 "${COMPOSE[@]}" "$@"; }
 oneoff() { TASK="$PROJECT-release-task-$$"; run 360 "${COMPOSE[@]}" run --rm --pull never --no-deps --name "$TASK" migrate --config /etc/omega/app.yaml --json "$@"; TASK=''; }
 phase() { STAGE=$1; printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$STAGE" >> "$RUN_DIR/journal.tsv"; }
 mkdir -p "$INPUT/.release/runs"
@@ -109,7 +111,7 @@ tools
 phase disk-preflight
 # Reserve room for database/log growth and an additional image-size working set.
 input_free=$(df -Pk "$INPUT" | awk 'END {print $4}')
-docker_root=$(docker info --format '{{.DockerRootDir}}')
+docker_root=$(bounded 15 docker info --format '{{.DockerRootDir}}')
 docker_free=$(df -Pk "$docker_root" | awk 'END {print $4}')
 archive_kb=$(du -k "$BUNDLE/images.tar" | awk '{print $1}')
 [[ "$input_free" =~ ^[0-9]+$ ]] && [ "$input_free" -ge 102400 ] || fail 'input filesystem needs at least100MiB free'
