@@ -22,4 +22,33 @@
 
 权限测试现在复制已解析的管理员连接配置，再显式设置 `omega_runtime` 和专属测试密码；不再替换 `postgres:admin-secret` 字面串。2026-09-26 使用管理员密码 `changed-admin-password` 的独立 PostgreSQL 容器及固定 Go 1.27.1 容器执行 `go test -count=1 -v ./services/api/integration`，真实进程和越权测试通过，证明不依赖原密码文本。
 
-实际开发验收结果在完成运行后附录；未附结果不表示通过。
+实际开发验收结果如下，平台和提交边界分别记录。
+
+## 已执行结果（2026-09-26）
+
+完整开发行为运行：`./scripts/acceptance-dev.sh --output /tmp/omega13-dev-evidence-final`，源提交 `9149dce`，UTC 02:08:19–02:12:54，macOS arm64 / Docker Linux arm64、Docker 29.8.0、Compose 5.5.1。逐项结果和原始命令证据保存在该目录 `results.tsv` 及各编号子目录。前述开发行为全部通过；跨领域项保留 NOT_EXECUTED。
+
+- OMEGA-19 实际 API app-network 地址从 `172.21.0.5` 变成 `172.21.0.6`，容器从 `40ab06c4086c` 变为 `2f653ecd7447`，edge 始终为 `975b41e94ae1`。专属临时容器占据旧地址，外部 ping 恢复后移除；证据 `OMEGA-19-proxy-rediscovery/addresses.txt`。
+- OMEGA-37 已按实际维护容器 IP `172.19.0.4` 在 PostgreSQL 中确认该 CLI 正等待真实表锁，再执行并发拒绝 6、TERM 取消 130 和重试；不是仅观察锁文件。维护容器 `604df97a29ed`，证据 `blocked-client.txt` 和操作日志。
+- 双实例真实密码交叉认证被拒绝，正确实例凭据成功。reset 同时验证错误确认、prod 输入，以及“输入仍为 dev 但实际数据库身份为 prod”的拒绝；恢复该测试身份后仅重置 A，B 的容器/安装身份/健康不变。
+- 六份临时凭据对全部 stdout/stderr 的不回显扫描均无匹配。错误依赖与错误 SQL 都实际导致指定阶段失败，恢复原文件后同一入口成功，数据库数据/身份保留。
+
+### 发现并修复的源码挂载凭据问题
+
+检查 OMEGA-24 时发现，旧 dev 源码挂载包含默认 `.omega/dev`，运行用户能够读取原始 admin/migrator 文件。只读测试 `test -r` 确认问题，全程没有读取或输出凭据值；角色专用 `/run/secrets` 挂载本身不能遮住源码下的原文件。
+
+开发实现已通过 `1ba1d92`（本分支对应 `8cc0d06`）修正：所有源码消费者遮蔽 `/workspace/.omega`，选择器拒绝源码中其他位置的输入，edge 拒绝把 `.omega` 路径转发给 Vite。
+
+受影响回归：`./scripts/acceptance-dev.sh --secret-boundary-only --output /tmp/omega13-dev-secret-boundary`，源提交 `a86171c`，UTC 02:15:21–02:16:13，真实默认 `.omega/dev` 冷启动及以下检查通过：
+
+- API、web、console、migrate、deps 均不能读取来源目录 admin/migrator/staged-admin；API 所需 runtime Secret 仍可读。
+- 两个 app 经 edge 访问三个实际私有 `@fs` 路径，六次均为 404；响应正文在私有临时目录校验不含任何凭据，不进入证据日志，随后删除。
+- 五服务健康和普通入口仍通过；测试最后只重置自己的实例。
+
+额外入口策略真实进程检查 `tests/acceptance-dev/input-policy.sh` 通过，证据 `/tmp/omega13-dev-input-policy-evidence.txt`：源码中非 `.omega` 输入返回 3；`.omega` 内带空格路径和外部带空格路径通过位置策略，并准确进入“缺失 instance.env”的 2 拒绝，无凭据和锁残留。这部分只证明选择器策略，不额外声称完整启动。
+
+### PostgreSQL 默认权限与部分元数据回归
+
+增强后的 API 真实进程套件再次通过（固定 Go 1.27.1、PostgreSQL 17.10，管理员密码不同于原固定文本）：migrator 创建的未来 `bigserial` 表，runtime 默认插入实际使用新 sequence 并返回 ID 1，SELECT/UPDATE/DELETE 成功；ALTER/DROP 表、sequence、schema 及 CREATE ROLE 均实际被拒绝。缺失控制表、存在安装身份但缺失 schema 记录的两类部分状态均拒绝 migrate/ensure，安装身份未变。这些表只存在于一次性测试数据库中，不引入业务模型。
+
+完整运行证据与凭据边界修复后的定向回归按其各自提交记录，不能混写为同一未经区分的完整快照。原生 Linux amd64 仍未执行；真正生产交付不在此报告范围内。

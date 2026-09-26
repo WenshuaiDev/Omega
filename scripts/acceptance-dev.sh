@@ -128,6 +128,10 @@ inputs_hash > "$OUTPUT/initial-inputs.sha256"; identity > "$OUTPUT/initial-ident
 A_PROJECT=$PROJECT; A_PORT=$PORT
 record PASS 'Project-cold start from source path with spaces; all five services and public paths; host runtimes forbidden. Shared base cache retained.'
 
+begin input-location-policy
+run 0 "$ROOT/tests/acceptance-dev/input-policy.sh"
+record PASS 'Unmanaged in-source inputs rejected; hidden/external spaced paths reach identity validation without credentials or resource creation.'
+
 begin OMEGA-16-24-secret-boundaries
 for service in api web console; do
   run 0 docker exec "$(container "$service")" sh -c 'test ! -r /workspace/.omega/dev/secrets/admin && test ! -r /workspace/.omega/dev/secrets/migrator && test ! -r /workspace/.omega/dev/.runtime-secrets/db-admin && test ! -r /run/secrets/admin_password && test ! -r /run/secrets/migrator_password'
@@ -306,6 +310,7 @@ printf 'maintenance_container=%s database_client_ip=%s\n' "$task_id" "$task_ip" 
 run 6 "$SRC/scripts/omega.sh" --input "$INPUT" -- doctor
 assert grep -q 'operation lock held' "$OUTPUT/$STEP/1.stderr"
 kill -TERM "$ACTIVE"; code=0; wait "$ACTIVE" || code=$?; ACTIVE=''
+printf '%s\n' "$code" > "$OUTPUT/$STEP/operation.exit"
 assert test "$code" = 130
 assert test ! -d "$INPUT/.lock"
 sql "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE application_name='omega_acceptance_lock'" > "$OUTPUT/$STEP/release-lock.stdout"
