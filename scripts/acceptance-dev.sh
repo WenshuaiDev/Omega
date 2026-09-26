@@ -9,6 +9,7 @@ while [ "$#" -gt 0 ]; do
 done
 mkdir -p "$OUTPUT"; OUTPUT=$(cd "$OUTPUT" && pwd -P)
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/omega dev acceptance.XXXXXX")
+WORK=$(cd "$WORK" && pwd -P)
 ORIGINAL_PATH=$PATH
 SOURCE_COMMIT=$(git -C "$ROOT" rev-parse HEAD)
 for name in A B; do
@@ -39,7 +40,7 @@ printf 'case\tstatus\tstarted_at\tfinished_at\tevidence\tdetail\n' > "$OUTPUT/re
 } > "$OUTPUT/platform.txt"
 docker ps -a --format '{{.ID}} {{.Names}}' > "$OUTPUT/baseline-containers.txt"
 docker image ls --format '{{.Repository}}:{{.Tag}} {{.ID}}' > "$OUTPUT/baseline-images.txt"
-STEP=setup; STARTED=$(date -u +%FT%TZ); INDEX=0; ACTIVE=''; SUCCESS=false
+STEP=setup; STARTED=$(date -u +%FT%TZ); INDEX=0; ACTIVE=''; PLACEHOLDER=''
 select_instance() {
   NAME=$1; SRC="$WORK/source $NAME"; INPUT="$SRC/.omega/dev"; INSTANCE=''; PROJECT=''; PORT=''
   if [ -f "$INPUT/instance.env" ]; then
@@ -54,7 +55,8 @@ fail() { echo "$*" >&2; record FAIL "$*"; exit 1; }
 assert() { "$@" || fail "assertion failed: $*"; }
 run() {
   local expected=$1; shift; INDEX=$((INDEX+1)); local stem="$OUTPUT/$STEP/$INDEX" code=0
-  printf '%q ' "$@" > "$stem.argv"; printf '\n' >> "$stem.argv"
+  printf 'source=%q input=%q\n' "${SRC:-}" "${INPUT:-}" > "$stem.argv"
+  printf '%q ' "$@" >> "$stem.argv"; printf '\n' >> "$stem.argv"
   "$@" > "$stem.stdout" 2> "$stem.stderr" || code=$?
   printf '%s\n' "$code" > "$stem.exit"
   [ "$code" -eq "$expected" ] || fail "expected exit $expected, got $code; see $STEP/$INDEX.stderr"
@@ -86,6 +88,7 @@ wait_ping() {
 cleanup() {
   local code=$?; trap - EXIT INT TERM
   [ -z "$ACTIVE" ] || kill -TERM "$ACTIVE" 2>/dev/null || true
+  [ -z "$PLACEHOLDER" ] || docker rm -f "$PLACEHOLDER" >/dev/null 2>&1 || true
   for name in A B; do
     select_instance "$name"
     if [ -n "$PROJECT" ]; then
@@ -145,6 +148,8 @@ begin OMEGA-08-09-14-dependency
 cp "$SRC/package.json" "$WORK/package-original.json"
 hash "$SRC/yarn.lock" > "$OUTPUT/$STEP/lock-before.sha256"
 sed 's/"typescript": "6.0.3"/"typescript": "6.0.2"/' "$WORK/package-original.json" > "$SRC/package.json"
+diff -u "$WORK/package-original.json" "$SRC/package.json" > "$OUTPUT/$STEP/fixture.diff" || true
+hash "$SRC/package.json" > "$OUTPUT/$STEP/fixture.sha256"
 run 1 "$SRC/scripts/dev.sh" dev
 assert grep -q 'immutable-dependencies failed' "$OUTPUT/$STEP/1.stderr"
 hash "$SRC/yarn.lock" > "$OUTPUT/$STEP/lock-after.sha256"; assert cmp "$OUTPUT/$STEP/lock-before.sha256" "$OUTPUT/$STEP/lock-after.sha256"
@@ -157,6 +162,8 @@ record PASS 'Actual immutable dependency failure, unchanged lock, original ident
 begin OMEGA-05-recompile
 cp "$SRC/services/api/internal/app/server.go" "$WORK/server-original.go"
 sed 's/"project": "Omega"/"project": "Omega-probe"/' "$WORK/server-original.go" > "$SRC/services/api/internal/app/server.go"
+diff -u "$WORK/server-original.go" "$SRC/services/api/internal/app/server.go" > "$OUTPUT/$STEP/fixture.diff" || true
+hash "$SRC/services/api/internal/app/server.go" > "$OUTPUT/$STEP/fixture.sha256"
 wait_ping 'Omega-probe'
 printf '\nthis is invalid Go syntax\n' >> "$SRC/services/api/internal/app/server.go"
 deadline=$((SECONDS+90))
@@ -189,11 +196,20 @@ record PASS 'Unknown configuration rejected before application start; valid orig
 
 begin OMEGA-19-proxy-rediscovery
 old_api=$(container api); old_edge=$(container edge)
-run 0 compose up -d --no-build --force-recreate --wait --wait-timeout 210 api
+old_ip=$(docker inspect --format "{{with index .NetworkSettings.Networks \"${PROJECT}_app\"}}{{.IPAddress}}{{end}}" "$old_api")
+assert test -n "$old_ip"
+run 0 compose rm -sf api
+PLACEHOLDER="$PROJECT-dns-occupant"
+run 0 docker run -d --rm --name "$PLACEHOLDER" --label "omega.acceptance.project=$PROJECT" --network "${PROJECT}_app" --ip "$old_ip" --entrypoint sleep "$PROJECT-tools:dev" 300
+run 0 compose up -d --no-build --wait --wait-timeout 210 api
+new_ip=$(docker inspect --format "{{with index .NetworkSettings.Networks \"${PROJECT}_app\"}}{{.IPAddress}}{{end}}" "$(container api)")
+printf 'old_api=%s old_ip=%s new_api=%s new_ip=%s edge=%s\n' "$old_api" "$old_ip" "$(container api)" "$new_ip" "$old_edge" > "$OUTPUT/$STEP/addresses.txt"
 assert test "$old_api" != "$(container api)"
+assert test "$old_ip" != "$new_ip"
 assert test "$old_edge" = "$(container edge)"
 wait_ping '"status":"ok"'
-record PASS 'API container replaced while edge container unchanged; external database-backed ping recovered.'
+run 0 docker rm -f "$PLACEHOLDER"; PLACEHOLDER=''
+record PASS 'API changed actual app-network IP while edge container unchanged; old IP occupied by scoped fixture; external ping recovered.'
 
 begin OMEGA-11-down-preserves
 run 0 make_cmd down
@@ -208,6 +224,8 @@ begin OMEGA-08-09-migration
 select_instance B
 cp "$SRC/services/api/internal/database/database.go" "$WORK/database-original.go"
 sed 's/CREATE TABLE omega.installation/CREATE TABL omega.installation/' "$WORK/database-original.go" > "$SRC/services/api/internal/database/database.go"
+diff -u "$WORK/database-original.go" "$SRC/services/api/internal/database/database.go" > "$OUTPUT/$STEP/fixture.diff" || true
+hash "$SRC/services/api/internal/database/database.go" > "$OUTPUT/$STEP/fixture.sha256"
 run 4 "$SRC/scripts/dev.sh" dev
 select_instance B
 assert grep -q 'migration failed' "$OUTPUT/$STEP/1.stderr"
@@ -228,7 +246,10 @@ identity > "$OUTPUT/$STEP/B-identity.txt"
 assert test "$(hash "$WORK/source A/.omega/dev/secrets/runtime" | awk '{print $1}')" != "$(hash "$WORK/source B/.omega/dev/secrets/runtime" | awk '{print $1}')"
 run 0 curl --max-time 10 --fail --silent "http://127.0.0.1:$A_PORT/api/v1/ping"
 run 0 curl --max-time 10 --fail --silent "http://127.0.0.1:$B_PORT/api/v1/ping"
-record PASS 'Two real instances have different IDs, ports, projects, volumes and credentials; simultaneous public health.'
+run 2 docker run --rm --network "${PROJECT}_data" --mount "type=bind,src=$WORK/source A/.omega/dev/secrets/runtime,dst=/password,readonly" --entrypoint sh postgres:17.10-alpine -c 'PGPASSWORD=$(cat /password) psql -h db -U omega_runtime -d omega -c "SELECT 1"'
+assert grep -q 'password authentication failed' "$OUTPUT/$STEP/3.stderr"
+run 0 docker run --rm --network "${PROJECT}_data" --mount "type=bind,src=$INPUT/secrets/runtime,dst=/password,readonly" --entrypoint sh postgres:17.10-alpine -c 'PGPASSWORD=$(cat /password) psql -h db -U omega_runtime -d omega -c "SELECT 1"'
+record PASS 'Different instances/projects/ports/volumes/credentials; A credential cannot authenticate to B while B credential succeeds; simultaneous public health.' 
 
 begin OMEGA-37-concurrency-cancel
 select_instance A
@@ -240,6 +261,18 @@ done
 "$SRC/scripts/omega.sh" --input "$INPUT" -- doctor > "$OUTPUT/$STEP/operation.stdout" 2> "$OUTPUT/$STEP/operation.stderr" & ACTIVE=$!
 deadline=$((SECONDS+20))
 while [ ! -d "$INPUT/.lock" ]; do [ "$SECONDS" -lt "$deadline" ] || fail 'maintenance failed to acquire lock'; sleep 1; done
+# Verify the actual one-off CLI (not merely an HTTP health probe) reached PostgreSQL lock wait.
+deadline=$((SECONDS+30)); task_ip=''
+while [ "$SECONDS" -lt "$deadline" ]; do
+  task_id=$(docker ps -q --filter "name=${PROJECT}-task-")
+  if [ -n "$task_id" ]; then
+    task_ip=$(docker inspect --format "{{with index .NetworkSettings.Networks \"${PROJECT}_data\"}}{{.IPAddress}}{{end}}" "$task_id")
+    if [ -n "$task_ip" ] && [ "$(sql "SELECT count(*) FROM pg_stat_activity WHERE application_name='omega' AND client_addr='$task_ip'::inet AND wait_event_type='Lock'")" -gt 0 ]; then break; fi
+  fi
+  sleep 1
+done
+assert test "$SECONDS" -lt "$deadline"
+printf 'maintenance_container=%s database_client_ip=%s\n' "$task_id" "$task_ip" > "$OUTPUT/$STEP/blocked-client.txt"
 run 6 "$SRC/scripts/omega.sh" --input "$INPUT" -- doctor
 assert grep -q 'operation lock held' "$OUTPUT/$STEP/1.stderr"
 kill -TERM "$ACTIVE"; code=0; wait "$ACTIVE" || code=$?; ACTIVE=''
@@ -259,6 +292,11 @@ cp "$INPUT/instance.env" "$WORK/instance-original.env"
 sed 's/ENVIRONMENT=dev/ENVIRONMENT=prod/' "$WORK/instance-original.env" > "$INPUT/instance.env"
 run 3 "$SRC/scripts/dev.sh" dev-reset --confirm "$INSTANCE"
 cp "$WORK/instance-original.env" "$INPUT/instance.env"
+run 0 sql "UPDATE omega.installation SET environment='prod'"
+run 3 "$SRC/scripts/dev.sh" dev-reset --confirm "$INSTANCE"
+assert grep -q 'database instance/environment does not match' "$OUTPUT/$STEP/4.stdout"
+assert docker volume inspect "${PROJECT}_db_data"
+run 0 sql "UPDATE omega.installation SET environment='dev'"
 run 0 "$SRC/scripts/dev.sh" dev-reset --confirm "$INSTANCE"
 if docker volume inspect "${PROJECT}_db_data" >/dev/null 2>&1; then fail 'confirmed reset left database volume'; fi
 select_instance B
@@ -266,12 +304,19 @@ assert test "$B_DB" = "$(container db)"
 assert test "$B_EDGE" = "$(container edge)"
 identity > "$OUTPUT/$STEP/B-identity.txt"; assert cmp "$OUTPUT/OMEGA-10-isolation/B-identity.txt" "$OUTPUT/$STEP/B-identity.txt"
 wait_ping '"status":"ok"'
-record PASS 'Wrong confirmation/prod rejected; exact A reset deleted only A; B container identity/data/health unchanged.'
+record PASS 'Wrong confirmation/prod inputs and actual prod DB identity refused; exact A reset deleted only A; B containers/data/health unchanged.'
 
+begin OMEGA-16-log-secret-audit
+for name in A B; do
+  for role in admin migrator runtime; do
+    if grep -F -l -f "$WORK/source $name/.omega/dev/secrets/$role" "$OUTPUT"/*/*.stdout "$OUTPUT"/*/*.stderr > "$OUTPUT/$STEP/$name-$role.matches"; then fail 'credential appeared in captured stdout/stderr'; fi
+  done
+done
+record PASS 'All six generated credentials absent from captured command stdout/stderr; audit emits filenames only.'
 begin cleanup
 run 0 "$SRC/scripts/dev.sh" dev-reset --confirm "$INSTANCE"
 assert test ! -s "$OMEGA_ACCEPTANCE_DENIED"
 record PASS 'All harness database/cache volumes reset through actual selected-instance entry points; no denied host runtime ran.'
 begin pending-cross-scope
 record NOT_EXECUTED 'OMEGA04 browser HMR, OMEGA13 all-workspace quality checks, full OMEGA16 artifact secret audit and native OMEGA38 belong to companion evidence; this report does not mark them passed.'
-SUCCESS=true
+rm -rf -- "$WORK"
