@@ -10,3 +10,6 @@ artifacts
 **/*.key
 **/secrets
 .yarn/global
+
+**/.runtime-secrets
+**/instance.env
