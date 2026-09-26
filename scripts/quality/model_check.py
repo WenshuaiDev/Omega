@@ -77,6 +77,8 @@ def images():
     for package in sorted(root.glob("apps/*/package.json")):
         print(f"{package.parent.name}|apps/Dockerfile|production|{package.parent.name}")
     for dockerfile in sorted(root.glob("infra/*/Dockerfile")):
+        if dockerfile.parent.name == "acceptance":
+            continue  # This image simulates an operator host, not a released component.
         print(f"{dockerfile.parent.name}|{dockerfile}||")
     # Every explicit service directory needs its own production image.
     for module in root.glob("services/*/go.mod"):
@@ -98,7 +100,7 @@ def toolchain():
                 image = line.split()[1]
                 if image == "scratch" or ":" not in image:
                     continue  # A named earlier stage, not an external base.
-                require(re.search(r":\d+\.\d+\.\d+(?:[-@]|$)", image), f"{dockerfile}: base image must have exact version: {image}")
+                require(re.search(r":v?\d+\.\d+\.\d+(?:[-@]|$)", image), f"{dockerfile}: base image must have exact version: {image}")
                 if image.startswith("nginx:"):
                     nginx.add(image)
     require(len(nginx) == 1, "app and edge Nginx versions differ")
