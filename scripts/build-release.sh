@@ -17,12 +17,13 @@ mkdir -p "$OUTPUT/materials/scripts" "$OUTPUT/materials/infra/db" "$OUTPUT/templ
 OUTPUT=$(cd "$OUTPUT" && pwd -P)
 case "$OUTPUT" in "$ROOT"/*) fail 'release output must be outside build context' ;; esac
 for role in api web console edge tools; do
+  build_args=(--platform linux/amd64 --build-arg "VERSION=$VERSION" --build-arg "COMMIT=$COMMIT" -t "omega-release/$role:$VERSION")
   case "$role" in
-    api) file=services/api/Dockerfile; args=(--target production) ;;
-    web|console) file=apps/Dockerfile; args=(--target production --build-arg "APP=$role") ;;
-    *) file="infra/$role/Dockerfile"; args=() ;;
+    api) file=services/api/Dockerfile; build_args+=(--target production) ;;
+    web|console) file=apps/Dockerfile; build_args+=(--target production --build-arg "APP=$role") ;;
+    *) file="infra/$role/Dockerfile" ;;
   esac
-  docker build --platform linux/amd64 -f "$ROOT/$file" "${args[@]}" --build-arg "VERSION=$VERSION" --build-arg "COMMIT=$COMMIT" -t "omega-release/$role:$VERSION" "$ROOT"
+  docker build "${build_args[@]}" -f "$ROOT/$file" "$ROOT"
 done
 docker pull --platform linux/amd64 postgres:17.10-alpine
 docker tag postgres:17.10-alpine "omega-release/db:$VERSION"
