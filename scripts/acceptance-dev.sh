@@ -13,7 +13,7 @@ ORIGINAL_PATH=$PATH
 SOURCE_COMMIT=$(git -C "$ROOT" rev-parse HEAD)
 for name in A B; do
   mkdir -p "$WORK/source $name"
-  git -C "$ROOT" archive HEAD | tar -xf - -C "$WORK/source $name"
+  git -C "$ROOT" archive HEAD | tar -xpf - -C "$WORK/source $name"
 done
 mkdir -p "$WORK/deny"
 for tool in go node yarn corepack npm python python3 jq; do
@@ -225,7 +225,7 @@ assert test "$A_PROJECT" != "$B_PROJECT"
 assert test "$A_PORT" != "$B_PORT"
 B_DB=$(container db); B_EDGE=$(container edge)
 identity > "$OUTPUT/$STEP/B-identity.txt"
-assert test "$(cat "$WORK/source A/.omega/dev/secrets/runtime")" != "$(cat "$WORK/source B/.omega/dev/secrets/runtime")"
+assert test "$(hash "$WORK/source A/.omega/dev/secrets/runtime" | awk '{print $1}')" != "$(hash "$WORK/source B/.omega/dev/secrets/runtime" | awk '{print $1}')"
 run 0 curl --max-time 10 --fail --silent "http://127.0.0.1:$A_PORT/api/v1/ping"
 run 0 curl --max-time 10 --fail --silent "http://127.0.0.1:$B_PORT/api/v1/ping"
 record PASS 'Two real instances have different IDs, ports, projects, volumes and credentials; simultaneous public health.'
