@@ -1,0 +1,2 @@
+775 1000:1000 /releases/candidate/materials/infra/db/10-omega.sh
+consumer_uid=70 read=true execute=true

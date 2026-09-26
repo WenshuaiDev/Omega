@@ -1,0 +1,4 @@
+PASS input=<private-fixture>/source/unmanaged inputs exit=3 diagnostic=inputs inside the source tree must be under .omega
+PASS input=<private-fixture>/source/.omega/spaced inputs exit=2 diagnostic=missing instance.env
+PASS input=<private-fixture>/external inputs exit=2 diagnostic=missing instance.env
+Allowed paths passed location policy and reached the expected absent-identity check; this probe does not claim an additional full startup.

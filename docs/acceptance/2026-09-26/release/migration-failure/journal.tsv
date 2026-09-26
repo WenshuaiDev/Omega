@@ -1,0 +1,7 @@
+2026-09-26T03:10:10Z	inputs
+2026-09-26T03:10:12Z	disk-preflight
+2026-09-26T03:10:17Z	candidate-config
+2026-09-26T03:10:18Z	database-preflight
+2026-09-26T03:10:24Z	maintenance
+2026-09-26T03:10:25Z	migration
+2026-09-26T03:10:27Z	exit=4	phase=migration

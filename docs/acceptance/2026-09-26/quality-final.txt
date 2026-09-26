@@ -1,0 +1,152 @@
+Command: ./scripts/check.sh --output <new evidence directory>
+Full check after pinned acceptance-only browser dependency and root lock changes.
+===== environment.txt =====
+2026-09-26T02:25:44Z
+d8105e9ca7631f59ad599c746be04663ae941b40
+Darwin arm64
+client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64
+Docker Compose version v5.5.1
+formal image target=linux/amd64; cross-build is not native-platform acceptance
+
+===== result.txt =====
+mode=check
+stage=complete
+exit=0
+finished=2026-09-26T02:27:42Z
+
+===== tools-versions.log =====
+tools runtime pins verified: Python 3.13.7, PyYAML 6.0.2, OpenSSL 3.5.8
+
+===== go-check.log =====
+[/workspace/services/api] go vet ./...
+go: downloading github.com/jackc/pgx/v5 v5.11.0
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+go: downloading golang.org/x/text v0.29.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+go: downloading github.com/jackc/pgpassfile v1.0.0
+[/workspace/services/api] go mod verify
+all modules verified
+[/workspace/services/api] go test -count=1 -timeout=180s -v ./...
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/devwatch	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/omega	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/omega-api	[no test files]
+=== RUN   TestProcesses
+--- PASS: TestProcesses (3.08s)
+PASS
+ok  	github.com/WenshuaiDev/Omega/services/api/integration	3.085s
+?   	github.com/WenshuaiDev/Omega/services/api/internal/app	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/cli	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/config	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/database	[no test files]
+[/workspace/services/api] go build ./...
+
+===== frontend-check.log =====
+yarn install --immutable
+➤ YN0000: · Yarn 4.18.1
+➤ YN0000: ┌ Resolution step
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0013: │ 194 packages were added to the project (+ 157.05 MiB).
+➤ YN0000: └ Completed in 3s 192ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed in 0s 854ms
+➤ YN0000: · Done in 4s 134ms
+yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+yarn exec prettier --check apps/console
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/console typecheck
+yarn workspace @omega/console lint
+yarn workspace @omega/console test
+
+ RUN  v5.0.1 /workspace/apps/console
+
+ ✓ src/app.test.ts (5 tests) 94ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  02:26:14
+   Duration  468ms (environment 69%, tests 23%, transform 6%, import 2%, worker 1%)
+
+yarn workspace @omega/console build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 26 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:  0.33 kB
+dist/assets/index-fC0oYdhb.css    0.99 kB │ gzip:  0.56 kB
+dist/assets/index-DoUSdVCA.js    13.69 kB │ gzip:  5.14 kB
+dist/assets/mount-B1bg0LIG.js   221.29 kB │ gzip: 69.30 kB
+
+✓ built in 84ms
+yarn exec prettier --check apps/web
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/web typecheck
+yarn workspace @omega/web lint
+yarn workspace @omega/web test
+
+ RUN  v5.0.1 /workspace/apps/web
+
+ ✓ src/app.test.ts (5 tests) 98ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  02:26:18
+   Duration  487ms (environment 68%, tests 23%, transform 6%, import 2%, worker 1%)
+
+yarn workspace @omega/web build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 26 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.44 kB │ gzip:  0.33 kB
+dist/assets/index-fC0oYdhb.css    0.99 kB │ gzip:  0.56 kB
+dist/assets/index-Btyeh0Oc.js    13.68 kB │ gzip:  5.14 kB
+dist/assets/mount-B1bg0LIG.js   221.29 kB │ gzip: 69.30 kB
+
+✓ built in 86ms
+yarn exec prettier --check packages/reference-app
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/reference-app typecheck
+yarn workspace @omega/reference-app lint
+yarn workspace @omega/reference-app test
+
+ RUN  v5.0.1 /workspace/packages/reference-app
+
+ ✓ src/config.test.ts (14 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  02:26:22
+   Duration  87ms (transform 55%, import 25%, tests 14%, worker 6%)
+
+
+===== checker-tests.log =====
+test_host_paths_are_compared_without_container_existence (model_check_test.FormalModelTests.test_host_paths_are_compared_without_container_existence) ... ok
+test_inherited_image_user_is_checked (model_check_test.FormalModelTests.test_inherited_image_user_is_checked) ... ok
+test_realistic_unsafe_overrides_rejected (model_check_test.FormalModelTests.test_realistic_unsafe_overrides_rejected) ... ok
+test_valid_formal_topology (model_check_test.FormalModelTests.test_valid_formal_topology) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK
+test: final Compose topology and deployment policies passed
+prod: final Compose topology and deployment policies passed
+test: final Compose topology and deployment policies passed
+
+===== binary-versions.log =====
+{"operation_id":"dbdb412081854c0eff404e97","version":"quality","commit":"d8105e9ca7631f59ad599c746be04663ae941b40","command":"version","started_at":"2026-09-26T02:27:05.057803632Z","finished_at":"2026-09-26T02:27:05.057876924Z","exit_code":0,"result":"ok","data":{"schema_max":1,"schema_min":1}}
+
+===== inherited-image-users.log =====
+test: final Compose topology and deployment policies passed
+prod: final Compose topology and deployment policies passed
+
+===== unchanged-dependencies.log =====
+All dependency manifests/locks and original source unchanged

@@ -1,0 +1,1 @@
+{"operation_id":"79279929a82315482d07e958","version":"0.1.0-issue13-rc7","commit":"4f6f5b3a2b1f847f4f9fa1ca1f5f94ff56c7930d","instance_id":"offline-test","command":"config validate","started_at":"2026-09-26T02:57:12.980209219Z","finished_at":"2026-09-26T02:57:12.989385427Z","exit_code":0,"result":"configuration valid"}

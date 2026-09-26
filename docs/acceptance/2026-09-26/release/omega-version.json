@@ -1,0 +1,1 @@
+{"operation_id":"6fe9d04af337fd64226ea5c6","version":"0.1.0-issue13-rc7","commit":"4f6f5b3a2b1f847f4f9fa1ca1f5f94ff56c7930d","command":"version","started_at":"2026-09-26T02:56:52.709260084Z","finished_at":"2026-09-26T02:56:52.709339376Z","exit_code":0,"result":"ok","data":{"schema_max":1,"schema_min":1}}

@@ -1,0 +1,47 @@
+[
+  {
+    "batch": "review quality first attempt",
+    "status": "FAIL",
+    "result": [
+      "local_run_exit=1",
+      "spec_complete=false",
+      "native_platform=separate-pending-20"
+    ],
+    "inner_result": [
+      "mode=check",
+      "stage=unchanged-dependencies",
+      "exit=1",
+      "finished=2026-09-26T02:45:30Z"
+    ],
+    "diagnostic": [
+      "quality: source changed during checks: scripts/accept-release-target.sh"
+    ],
+    "resolution": "Follow-up edits raced this run; frozen-source quality2 and final Q3 passed later. This failed run is never counted as PASS."
+  },
+  {
+    "batch": "rc7 first unified release attempt",
+    "status": "FAIL",
+    "result": [
+      "local_run_exit=1",
+      "spec_complete=false",
+      "native_platform=separate-pending-20"
+    ],
+    "inner_result": [
+      "exit=1",
+      "version=0.1.0-issue13-rc7",
+      "manifest=341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e"
+    ],
+    "selected_log": [
+      "Loaded image: omega-release/api:0.1.0-issue13-rc7",
+      "Loaded image: omega-release/web:0.1.0-issue13-rc7",
+      "Loaded image: omega-release/console:0.1.0-issue13-rc7",
+      "Loaded image: omega-release/edge:0.1.0-issue13-rc7",
+      "Loaded image: omega-release/tools:0.1.0-issue13-rc7",
+      "Loaded image: omega-release/db:0.1.0-issue13-rc7",
+      "Imported verified release 0.1.0-issue13-rc7",
+      "Manifest SHA256: 341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e",
+      "Archive SHA256: 5723efe8e9ad447c681111ab7793940154e4e24ad1ff9c3777d5b45f0cd06b17"
+    ],
+    "resolution": "Actual UID1000 import succeeded; the harness then required literal mode 755 and rejected legitimate 775. Acceptance-only bbd6a33 tests actual UID70 read/execute plus UID1000 ownership. Candidate bytes unchanged; corrected complete drill recorded separately."
+  }
+]
