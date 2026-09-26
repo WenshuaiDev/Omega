@@ -142,6 +142,28 @@ echo 'Actual held operation rejects concurrent same-instance command, cancels130
 
 # Replace TLS inputs atomically. Failed later preflight must not corrupt the
 # key/certificate pair still bind-mounted by the running old edge.
+cp /instances/test/tls/cert.pem /tmp/good-cert.pem
+cp /instances/test/tls/key.pem /tmp/good-key.pem
+restore_tls() { cp /tmp/good-cert.pem /instances/test/tls/cert.pending; cp /tmp/good-key.pem /instances/test/tls/key.pending; chmod 644 /instances/test/tls/cert.pending; chmod 600 /instances/test/tls/key.pending; mv /instances/test/tls/cert.pending /instances/test/tls/cert.pem; mv /instances/test/tls/key.pending /instances/test/tls/key.pem; }
+cp /instances/prod/tls/cert.pem /instances/test/tls/cert.pending
+cp /instances/prod/tls/key.pem /instances/test/tls/key.pending
+chmod 644 /instances/test/tls/cert.pending; chmod 600 /instances/test/tls/key.pending
+mv /instances/test/tls/cert.pending /instances/test/tls/cert.pem; mv /instances/test/tls/key.pending /instances/test/tls/key.pem
+expect_failure op tls-reload test test
+restore_tls
+cp /instances/prod/tls/key.pem /instances/test/tls/key.pending; chmod 600 /instances/test/tls/key.pending; mv /instances/test/tls/key.pending /instances/test/tls/key.pem
+expect_failure op tls-reload test test
+restore_tls
+for validity in expired future; do
+  if [ "$validity" = expired ]; then before=20200101000000Z; after=20200102000000Z; else before=20990101000000Z; after=20990102000000Z; fi
+  openssl x509 -in /tmp/good-cert.pem -signkey /tmp/good-key.pem -not_before "$before" -not_after "$after" -out /instances/test/tls/cert.pending
+  chmod 644 /instances/test/tls/cert.pending; mv /instances/test/tls/cert.pending /instances/test/tls/cert.pem
+  expect_failure op tls-reload test test
+  restore_tls
+done
+docker exec omega-offline-test-edge-1 nginx -t
+[ ! -f /instances/test/edge/maintenance ]
+echo 'TLS hostname, key mismatch, expired and future certificates refused before maintenance'
 fingerprint() { openssl s_client -connect 127.0.0.1:18443 -servername omega.test </dev/null 2>/dev/null | openssl x509 -noout -fingerprint -sha256; }
 old_fingerprint=$(fingerprint)
 openssl req -x509 -newkey rsa:2048 -sha256 -days 3 -nodes -keyout /instances/test/tls/key.new -out /instances/test/tls/cert.new -subj /CN=omega.test -addext subjectAltName=DNS:omega.test >/dev/null 2>&1
@@ -158,8 +180,15 @@ op tls-reload test test
 echo 'Atomic TLS input renewal: failed preflight keeps old pair, explicit recreation serves new pair'
 
 if [ -n "$OLD_VERSION" ]; then
+  database_snapshot() { docker exec omega-offline-test-db-1 psql -U postgres -d omega -Atc "SELECT version,checksum FROM omega.schema_migrations ORDER BY version; SELECT * FROM omega.installation ORDER BY 1;"; }
+  database_snapshot > /evidence/rollback-db-before.txt
   sed -i "s/$VERSION/$OLD_VERSION/g" /instances/test/*.json
   /releases/old/materials/scripts/release.sh rollback --env test --input /instances/test --version "$OLD_VERSION" --manifest-sha256 "$OLD_MANIFEST"
+  database_snapshot > /evidence/rollback-db-after.txt
+  cmp /evidence/rollback-db-before.txt /evidence/rollback-db-after.txt
+  old_api=$(docker image inspect --platform linux/amd64 --format '{{.Id}}' "omega-release/api:$OLD_VERSION")
+  [ "$(docker inspect --format '{{.Image}}' omega-offline-test-api-1)" = "$old_api" ]
+  printf 'old_version=%s\nold_api_id=%s\n' "$OLD_VERSION" "$old_api" > /evidence/rollback-old-image.txt
   sed -i "s/$OLD_VERSION/$VERSION/g" /instances/test/*.json
   op deploy test test
   # Disposable real newer-schema fixture, not a changed manifest declaration.
