@@ -13,6 +13,7 @@ prerequisites() {
   for utility in docker bash tar awk find sort curl; do command -v "$utility" >/dev/null || fail "missing prerequisite: $utility"; done
   docker info >/dev/null 2>&1 || fail 'Docker daemon unavailable'
   docker compose version >/dev/null || fail 'Docker Compose plugin required'
+  docker version --format '{{.Client.APIVersion}} {{.Server.APIVersion}}' | awk '{split($1,c,"."); split($2,s,"."); exit !(c[1]>=1 && c[2]>=49 && s[1]>=1 && s[2]>=49)}' || fail 'Docker client/server API1.49+ required for platform-specific identity verification'
 }
 verify_manifest() {
   local root=$1 expected=$2 kind a b c d e extra seen=' ' file_count=0 image_count=0
@@ -49,7 +50,7 @@ verify_manifest() {
 verify_images() {
   local i actual
   for i in "${!IMAGE_ROLES[@]}"; do
-    actual=$(docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}}' "${IMAGE_REFS[$i]}" 2>/dev/null) || fail "missing local image: ${IMAGE_ROLES[$i]}; import verified archive first (no pull attempted)"
+    actual=$(docker image inspect --platform linux/amd64 --format '{{.Id}} {{.Os}}/{{.Architecture}}' "${IMAGE_REFS[$i]}" 2>/dev/null) || fail "missing local image: ${IMAGE_ROLES[$i]}; import verified archive first (no pull attempted)"
     [ "$actual" = "${IMAGE_IDS[$i]} linux/amd64" ] || fail "image content/platform mismatch: ${IMAGE_ROLES[$i]}"
   done
 }

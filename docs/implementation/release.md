@@ -1,7 +1,7 @@
 # Offline release and operations (#17)
 
 The target requires Linux amd64, Docker Engine/CLI supporting `docker image save
---platform` (API 1.48+), Compose v2+ with `--wait`/JSON config, Bash, curl, tar,
+--platform` and platform-specific inspect (API 1.49+), Compose v2+ with `--wait`/JSON config, Bash, curl, tar,
 SHA-256 (`sha256sum` or `shasum`), and standard Unix utilities. Go, Node, Yarn,
 Python, jq, source code and registry access are not target prerequisites. Docker
 access is operator authority; application/maintenance/tools containers never
@@ -15,7 +15,8 @@ From a clean committed checkout in the online build environment:
 ./scripts/build-release.sh 1.0.0-rc1 /absolute/output/omega-1.0.0-rc1
 ```
 
-This builds API, web, console, edge and tools for Linux amd64, selects PostgreSQL
+The clean committed tree is frozen with `git archive` before building, so later
+workspace edits cannot mix source revisions. This builds API, web, console, edge and tools for Linux amd64, selects PostgreSQL
 17.10, and exports all six images in one archive. API and omega come from the same
 image/commit; the actual binary supplies the schema compatibility range. Every
 file and image content ID/platform is recorded in `manifest.tsv`. Build evidence
@@ -46,6 +47,8 @@ Set all five `instance.env` fields; provide complete `api.yaml`, `migration.yaml
 `web.json` and `console.json`. The JSON version must equal the selected release.
 The instance ID is stable for all releases and determines the Compose project and
 database volume. Input paths may contain spaces, but not commas or newlines.
+Ordinary YAML, public JSON and the public certificate must be readable by their
+nonroot container users (mode0644); their parent input directory may remain0700.
 
 Provide `secrets/admin`, `secrets/migrator`, `secrets/runtime` (independent random
 single-line values at least32 characters, mode0600), `tls/cert.pem` and

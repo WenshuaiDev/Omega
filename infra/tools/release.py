@@ -5,6 +5,7 @@ import json
 import re
 import socket
 import ssl
+import stat
 import sys
 from pathlib import Path
 
@@ -21,6 +22,9 @@ def run(args):
             assert value["version"] == args[2] and value["commit"] == args[3], "API build identity differs"
             (root / "evidence/build.json").write_text(json.dumps({"version": args[2], "commit": args[3], "platform": "linux/amd64", "native_linux_amd64": "not executed; required separately", "test_acceptance": "pending; build evidence is not acceptance"}, indent=2) + "\n")
     elif command == "input-version":
+        for name in ("api.yaml", "migration.yaml", "web.json", "console.json", "tls/cert.pem"):
+            path = Path(args[1]) / name
+            assert path.is_file() and not path.is_symlink() and stat.S_IMODE(path.stat().st_mode) & 0o004, f"{name} must be a regular file readable by nonroot container users (for example0644)"
         for app in ("web", "console"):
             value = json.loads((Path(args[1]) / f"{app}.json").read_text())
             assert value["version"] == args[2], "public configuration version differs from explicit release"

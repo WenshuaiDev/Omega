@@ -13,9 +13,14 @@ COMMIT=$(git -C "$ROOT" rev-parse HEAD)
 for role in api web console edge tools db; do
   if docker image inspect "omega-release/$role:$VERSION" >/dev/null 2>&1; then fail "release version already has local image $role; choose a new version (never rebuild an accepted version)"; fi
 done
+SOURCE_SNAPSHOT=$(mktemp -d "${TMPDIR:-/tmp}/omega-release-source.XXXXXX")
+trap 'rm -rf -- "$SOURCE_SNAPSHOT"' EXIT
+git -C "$ROOT" archive "$COMMIT" | tar -xpf - -C "$SOURCE_SNAPSHOT"
+ORIGINAL_ROOT=$ROOT
+ROOT=$SOURCE_SNAPSHOT
 mkdir -p "$OUTPUT/materials/scripts" "$OUTPUT/materials/infra/db" "$OUTPUT/templates" "$OUTPUT/evidence"
 OUTPUT=$(cd "$OUTPUT" && pwd -P)
-case "$OUTPUT" in "$ROOT"/*) fail 'release output must be outside build context' ;; esac
+case "$OUTPUT" in "$ORIGINAL_ROOT"/*) fail 'release output must be outside repository' ;; esac
 for role in api web console edge tools; do
   build_args=(--platform linux/amd64 --build-arg "VERSION=$VERSION" --build-arg "COMMIT=$COMMIT" -t "omega-release/$role:$VERSION")
   case "$role" in
@@ -30,11 +35,11 @@ docker tag postgres:17.10-alpine "omega-release/db:$VERSION"
 IMAGES=()
 for role in api web console edge tools db; do IMAGES+=("omega-release/$role:$VERSION"); done
 docker image save --platform linux/amd64 --output "$OUTPUT/images.tar" "${IMAGES[@]}"
-cp "$ROOT"/compose{,.release,.test,.prod}.yaml "$OUTPUT/materials/"
-cp "$ROOT/scripts/"{release,release-common,import-release}.sh "$OUTPUT/materials/scripts/"
-cp "$ROOT/infra/db/10-omega.sh" "$OUTPUT/materials/infra/db/"
-cp "$ROOT/config/templates/"* "$OUTPUT/templates/"
-cp "$ROOT/docs/implementation/release.md" "$OUTPUT/OPERATIONS.md"
+cp -p "$ROOT"/compose{,.release,.test,.prod}.yaml "$OUTPUT/materials/"
+cp -p "$ROOT/scripts/"{release,release-common,import-release}.sh "$OUTPUT/materials/scripts/"
+cp -p "$ROOT/infra/db/10-omega.sh" "$OUTPUT/materials/infra/db/"
+cp -p "$ROOT/config/templates/"* "$OUTPUT/templates/"
+cp -p "$ROOT/docs/implementation/release.md" "$OUTPUT/OPERATIONS.md"
 docker run --rm --pull never --platform linux/amd64 --network none --entrypoint omega "omega-release/api:$VERSION" --json version > "$OUTPUT/evidence/api-version.json"
 docker run --rm --pull never --platform linux/amd64 --network none --mount "type=bind,src=$OUTPUT,dst=/release" "omega-release/tools:$VERSION" python /tools/release.py build-evidence /release "$VERSION" "$COMMIT"
 {
@@ -42,7 +47,7 @@ docker run --rm --pull never --platform linux/amd64 --network none --mount "type
   docker run --rm --pull never --platform linux/amd64 --network none --mount "type=bind,src=$OUTPUT,dst=/release,readonly" "omega-release/tools:$VERSION" python /tools/release.py compatibility /release
   for role in api web console edge tools db; do
     ref="omega-release/$role:$VERSION"
-    printf 'image\t%s\t%s\t%s\t%s\n' "$role" "$ref" "$(docker image inspect --format '{{.Id}}' "$ref")" "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$ref")"
+    printf 'image\t%s\t%s\t%s\t%s\n' "$role" "$ref" "$(docker image inspect --platform linux/amd64 --format '{{.Id}}' "$ref")" "$(docker image inspect --platform linux/amd64 --format '{{.Os}}/{{.Architecture}}' "$ref")"
   done
 } > "$OUTPUT/manifest.tsv"
 while IFS= read -r file; do
