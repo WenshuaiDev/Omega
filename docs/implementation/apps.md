@@ -24,3 +24,5 @@
 4. 专属 `omega15-hmr` Docker 网络中启动两个 Vite 与临时 Nginx。宿主仅连 Nginx 18317，通过每个 app 的 Vite token 建立 `/web/hmr`、`/console/hmr` WebSocket；修改对应实际入口源文件后两个连接分别收到 `full-reload`，源码随后恢复。此项证明代理 WebSocket 与文件监听；完整浏览器渲染/React Fast Refresh 和正式工程 edge 的集成验收由总体验收继续执行，不能将此协议检查称为完整 OMEGA-04 浏览器通过。临时容器及网络均已删除。
 
 原生 Linux amd64、正式发布包镜像身份、真实 edge 公开 JSON 和完整浏览器验收需由集成流程另行记录。用户明确原生平台无可用主机，保留待办。
+
+集成浏览器检查发现原 `mount.tsx` 混合组件与非组件导出，React Fast Refresh 将组件修改升级为整页刷新。后续修正把唯一组件导出移入 `App.tsx`，保留独立 `mount.tsx` 启动模块，形成可保留 React 状态的刷新边界。修正后重新执行类型、lint、24 项测试、两个正式构建和格式检查通过；状态保留的浏览器证据仍由集成验收记录。
