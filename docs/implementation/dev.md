@@ -91,3 +91,16 @@ Go workspace/module manifests and Yarn lock remained identical. Real runtime-rol
 A signal-canceled operation returned130 and released its own locks. The same
 instance restarted successfully with its original schema1/dev identity. These
 checks used local Linux arm64 containers, not native Linux amd64.
+
+## Source-mounted development Secret boundary correction
+
+Actual filesystem testing found that role-only `/run/secrets` mounts were
+insufficient: the host-UID source bind exposed default `.omega/dev/secrets`.
+All five source consumers now mask `/workspace/.omega` with an empty read-only
+mode0000 tmpfs, preserving only their explicitly selected role-secret mount.
+The host creates the masked mountpoint itself. An input directory inside the repo
+but outside `.omega` is refused; canonical external paths (including spaces) and
+`.omega` descendants remain supported. Nginx returns404 for managed `.omega`
+paths before proxying, including `@fs` attempts. This is a real discovered defect
+and correction; earlier role-boundary claims are superseded by the dedicated
+post-fix filesystem/HTTP regression evidence.

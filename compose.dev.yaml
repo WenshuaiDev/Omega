@@ -34,7 +34,7 @@ services:
     environment: *go-env
     volumes: *go-mounts
     command: [go, run, ./services/api/cmd/devwatch, --config, /etc/omega/app.yaml]
-    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g']
+    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g', '/workspace/.omega:ro,noexec,nosuid,nodev,mode=0000,size=1m']
     mem_limit: 2g
     pids_limit: 512
     healthcheck:
@@ -50,7 +50,7 @@ services:
     environment: *go-env
     entrypoint: [sh, -c, 'go build -o /tmp/omega ./services/api/cmd/omega && exec /tmp/omega "$$@"', omega]
     volumes: *go-mounts
-    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g']
+    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g', '/workspace/.omega:ro,noexec,nosuid,nodev,mode=0000,size=1m']
     mem_limit: 2g
     pids_limit: 512
   deps:
@@ -68,7 +68,7 @@ services:
     init: true
     security_opt: ['no-new-privileges:true']
     cap_drop: [ALL]
-    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g']
+    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=1g', '/workspace/.omega:ro,noexec,nosuid,nodev,mode=0000,size=1m']
     mem_limit: 2g
     pids_limit: 512
   web:
@@ -81,7 +81,7 @@ services:
     environment: *node-env
     command: [yarn, workspace, '@omega/web', dev]
     volumes: *node-mounts
-    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=128m']
+    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=128m', '/workspace/.omega:ro,noexec,nosuid,nodev,mode=0000,size=1m']
     mem_limit: 1g
     healthcheck:
       test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/web/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -98,7 +98,7 @@ services:
     environment: *node-env
     command: [yarn, workspace, '@omega/console', dev]
     volumes: *node-mounts
-    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=128m']
+    tmpfs: !override ['/tmp:rw,exec,nosuid,nodev,size=128m', '/workspace/.omega:ro,noexec,nosuid,nodev,mode=0000,size=1m']
     mem_limit: 1g
     healthcheck:
       test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/console/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
