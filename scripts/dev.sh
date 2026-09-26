@@ -25,6 +25,11 @@ docker compose version >/dev/null 2>&1 || { echo 'Docker Compose plugin is requi
 if [ "$COMMAND" = dev ]; then mkdir -p -- "$INPUT"; fi
 [ -d "$INPUT" ] || { echo "instance input does not exist: $INPUT" >&2; exit 2; }
 INPUT=$(cd -- "$INPUT" && pwd -P)
+# The source bind masks .omega. No other repository subtree may hold inputs.
+case "$INPUT/" in
+  "$ROOT/.omega/"*) ;;
+  "$ROOT/"*) echo 'inputs inside the source tree must be under .omega; use .omega/INSTANCE or a directory outside the source tree' >&2; exit 3 ;;
+esac
 case "$INPUT" in *$'\n'*|*','*) echo 'input paths containing newlines or commas are not supported by Docker mount syntax' >&2; exit 2 ;; esac
 chmod 700 "$INPUT"
 STAGE=preflight
@@ -204,7 +209,7 @@ case "$COMMAND" in
     STAGE=development-images
     run 1800 "${COMPOSE[@]}" build api web console edge
     # Create mountpoints as the developer, not as Docker root.
-    mkdir -p "$ROOT/node_modules" "$ROOT/.yarn" "$ROOT/apps/web/node_modules" "$ROOT/apps/console/node_modules" "$ROOT/packages/reference-app/node_modules"
+    mkdir -p "$ROOT/.omega" "$ROOT/node_modules" "$ROOT/.yarn" "$ROOT/apps/web/node_modules" "$ROOT/apps/console/node_modules" "$ROOT/packages/reference-app/node_modules"
     STAGE=database
     run 120 "${COMPOSE[@]}" up -d --no-build --wait --wait-timeout 90 db
     STAGE=coordinate-applications

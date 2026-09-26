@@ -27,3 +27,13 @@ sees migrator only, frontend sees none. Never publish the input directory.
 The generated `edge/maintenance` marker, if present, makes the HTTPS/app edge
 return `503`; release scripts own maintenance sequencing. Normal development
 never removes such a marker from another environment.
+
+Development input paths inside the source tree must be `.omega` or a descendant
+of `.omega`; otherwise startup refuses before generating credentials or starting
+containers. Inputs outside the source tree remain supported, including paths
+with spaces. Every development container that reads the source (API, maintenance,
+dependency installer and both frontends) shadows `/workspace/.omega` with an
+empty, read-only mode0000 tmpfs. The source bind therefore cannot bypass the
+role-specific secret mounts. Edge explicitly rejects paths containing `/.omega/`,
+including Vite `@fs` URLs, with404. Keep any managed private instance files only
+in the selected supported locations.
