@@ -70,10 +70,24 @@ binary so CLI exit codes survive the Go launcher; `health check` executes inside
 the API container against its real HTTP readiness. Write commands stop API first
 and restart only after success. Application CLI remains unaware of Docker.
 Version, real health/doctor, invalid-command exit2, simultaneous-command exit6,
-controlled COMPOSE/OMEGA environment pollution, and runtime CREATE TABLE denial
-were exercised on this instance. Credential/config hashes and data persistence
+controlled COMPOSE/OMEGA environment pollution
+were exercised on this instance. Runtime CREATE TABLE denial is checked after
+secret mount persistence is verified. Credential/config hashes and data persistence
 are additionally covered by the acceptance harness; this note does not substitute
 for its broader scenarios or pending native Linux amd64 evidence.
 
 Compose2.24.4+ is required for the dev-only `!override` tmpfs settings; final model
 validation reports an unsupported Compose parser before launching services.
+
+Repeat-run correction: staged role files preserve their existing inode when
+contents match (atomic replacement breaks live bind mounts on Docker Desktop).
+Changed role credential content is refused pending an explicit rotation procedure.
+App containers are recreated on coordinated dev startup so atomic config edits
+and newly rendered proxy configuration take effect; database is retained.
+
+After stop/start, hashes of all ordinary inputs, all three original credentials,
+Go workspace/module manifests and Yarn lock remained identical. Real runtime-role
+`CREATE TABLE omega.forbidden_probe` was denied for lack of schema privileges.
+A signal-canceled operation returned130 and released its own locks. The same
+instance restarted successfully with its original schema1/dev identity. These
+checks used local Linux arm64 containers, not native Linux amd64.

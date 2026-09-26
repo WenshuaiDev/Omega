@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Instance input validation and edge generation; never executes input as code."""
 import argparse
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -130,6 +131,9 @@ def validate(root, environment):
         def openssl(*args):
             return subprocess.check_output(["openssl", *args], stderr=subprocess.DEVNULL)
         openssl("x509", "-in", str(cert), "-noout", "-checkend", "86400")
+        not_before = openssl("x509", "-in", str(cert), "-noout", "-startdate").decode().strip().partition("=")[2]
+        if datetime.strptime(not_before, "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
+            raise ValueError("TLS certificate is not yet valid")
         host_check = openssl("x509", "-in", str(cert), "-noout", "-checkhost", data["DOMAIN"])
         if b"does match certificate" not in host_check or b"does NOT match" in host_check:
             raise ValueError("TLS certificate hostname does not match DOMAIN")
@@ -156,9 +160,12 @@ def render(root, output, environment, uid, gid):
         target = staged / name
         if target.is_symlink():
             raise ValueError("staged secret symlinks are not permitted")
-        # Unlink avoids writing a bind-mounted inode used by a running container.
-        target.unlink(missing_ok=True)
-        shutil.copyfile(source, target)
+        # Bind mounts retain this inode. Replacing it breaks live mounts on Desktop.
+        same_content = target.exists() and target.read_bytes() == source.read_bytes()
+        if target.exists() and not same_content and name != "tls-key.pem":
+            raise ValueError("credential differs from prepared instance; explicit credential rotation is required")
+        if not same_content:
+            shutil.copyfile(source, target)
         os.chmod(target, 0o400)
         os.chown(target, target_uid, target_gid)
     template = Path("/tools/nginx.conf.template").read_text()
