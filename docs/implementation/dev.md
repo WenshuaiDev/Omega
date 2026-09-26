@@ -104,3 +104,12 @@ but outside `.omega` is refused; canonical external paths (including spaces) and
 paths before proxying, including `@fs` attempts. This is a real discovered defect
 and correction; earlier role-boundary claims are superseded by the dedicated
 post-fix filesystem/HTTP regression evidence.
+
+
+Lifecycle review correction: preflight Docker checks, Compose read commands,
+volume checks and cleanup have finite deadlines. Cancellation stops the tracked
+child, releases token-owned locks before best-effort daemon removal, and returns
+130 even if removal times out. The shared `scripts/process.sh` wait primitive also
+serves formal release and browser/dispatcher wrappers. Focused shell regressions
+(use Python only as a test runner, never an operator prerequisite):
+`python3 -m unittest scripts.tests.wrappers_test -v`.

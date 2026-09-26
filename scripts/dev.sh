@@ -3,6 +3,9 @@
 set -Eeuo pipefail
 umask 077
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
+source "$ROOT/scripts/process.sh"
+CHILD=''
+trap 'stop_child "$CHILD" 5; exit 130' INT TERM
 COMMAND=${1:-dev}
 if [ "$#" -gt 0 ]; then shift; fi
 INPUT="$ROOT/.omega/dev"
@@ -20,8 +23,8 @@ case "$COMMAND" in dev|down|status|logs|dev-reset|omega) ;; *) echo 'expected de
 for utility in docker curl git make od awk sed cksum; do
   command -v "$utility" >/dev/null || { echo "missing prerequisite: $utility" >&2; exit 2; }
 done
-docker info >/dev/null 2>&1 || { echo 'Docker daemon is unavailable; start Docker or select the intended context.' >&2; exit 2; }
-docker compose version >/dev/null 2>&1 || { echo 'Docker Compose plugin is required.' >&2; exit 2; }
+bounded 20 docker info >/dev/null 2>&1 || { echo 'Docker daemon is unavailable; start Docker or select the intended context.' >&2; exit 2; }
+bounded 10 docker compose version >/dev/null 2>&1 || { echo 'Docker Compose plugin is required.' >&2; exit 2; }
 if [ "$COMMAND" = dev ]; then mkdir -p -- "$INPUT"; fi
 [ -d "$INPUT" ] || { echo "instance input does not exist: $INPUT" >&2; exit 2; }
 INPUT=$(cd -- "$INPUT" && pwd -P)
@@ -40,13 +43,14 @@ TOKEN="$$-$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')"
 cleanup() {
   local result=$?
   trap - EXIT INT TERM
-  [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
-  if [ -n "$TASK" ]; then docker rm -f "$TASK" >/dev/null 2>&1 || true; fi
+  stop_child "$CHILD" 5; CHILD=''
   local lock
   for lock in "${LOCKS[@]-}"; do
     [ -n "$lock" ] || continue
     if [ -f "$lock/owner" ] && [ "$(cat "$lock/owner")" = "$TOKEN" ]; then rm -f "$lock/owner"; rmdir "$lock" 2>/dev/null || true; fi
   done
+  # Locks are independent of best-effort daemon cleanup.
+  if [ -n "$TASK" ]; then bounded 10 docker rm -f "$TASK" >/dev/null 2>&1 || true; fi
   if [ "$result" -ne 0 ]; then echo "omega: $STAGE failed (exit $result); data and diagnostics retained. Input: $INPUT" >&2; fi
   exit "$result"
 }
@@ -63,31 +67,11 @@ acquire() {
 }
 # Read-only commands never mutate instance state, but also avoid transient preparation output.
 acquire "$INPUT/.lock"
-run() {
-  local seconds=$1; shift
-  local started=$SECONDS result=0
-  "$@" & CHILD=$!
-  while kill -0 "$CHILD" 2>/dev/null; do
-    if [ "$((SECONDS - started))" -ge "$seconds" ]; then
-      kill -TERM "$CHILD" 2>/dev/null || true
-      local grace=0
-      while kill -0 "$CHILD" 2>/dev/null && [ "$grace" -lt 5 ]; do sleep 1; grace=$((grace + 1)); done
-      kill -KILL "$CHILD" 2>/dev/null || true
-      wait "$CHILD" 2>/dev/null || true
-      CHILD=''
-      echo "operation exceeded ${seconds}s timeout" >&2
-      return 5
-    fi
-    sleep 1
-  done
-  wait "$CHILD" || result=$?
-  CHILD=''
-  return "$result"
-}
+run() { bounded "$@"; }
 
 if [ ! -f "$INPUT/instance.env" ]; then
   [ "$COMMAND" = dev ] || { echo 'missing instance.env' >&2; exit 2; }
-  if [ -n "$(docker volume ls -q --filter "label=org.omega.input=$INPUT")" ]; then
+  if [ -n "$(bounded 15 docker volume ls -q --filter "label=org.omega.input=$INPUT")" ]; then
     echo 'Persistent volume exists but instance.env is missing; restore the original inputs. No replacement identity will be generated.' >&2
     exit 3
   fi
@@ -117,11 +101,11 @@ mkdir -p "$LOCK_ROOT"; chmod 700 "$LOCK_ROOT"
 acquire "$LOCK_ROOT/$PROJECT"
 DB_VOLUME="${PROJECT}_db_data"
 HAS_DB=false
-if docker volume inspect "$DB_VOLUME" >/dev/null 2>&1; then
+if bounded 15 docker volume inspect "$DB_VOLUME" >/dev/null 2>&1; then
   HAS_DB=true
   for pair in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=dev" "org.omega.input=$INPUT"; do
     label=${pair%%=*}; expected=${pair#*=}
-    actual=$(docker volume inspect --format "{{index .Labels \"$label\"}}" "$DB_VOLUME")
+    actual=$(bounded 15 docker volume inspect --format "{{index .Labels \"$label\"}}" "$DB_VOLUME")
     [ "$actual" = "$expected" ] || { echo 'database volume ownership differs from requested instance/input; refusing' >&2; exit 3; }
   done
   for role in admin migrator runtime; do
@@ -141,7 +125,7 @@ for name in DOCKER_HOST DOCKER_CONTEXT DOCKER_CONFIG DOCKER_TLS_VERIFY DOCKER_CE
   [ -z "$value" ] || CLEAN_ENV+=("$name=$value")
 done
 COMPOSE=("${CLEAN_ENV[@]}" "OMEGA_INPUT_DIR=$INPUT" "OMEGA_SOURCE_DIR=$ROOT" "OMEGA_INSTANCE_ID=$INSTANCE_ID" "OMEGA_ENVIRONMENT=dev" "OMEGA_HTTP_PORT=$HTTP_PORT" "OMEGA_HTTPS_PORT=$HTTPS_PORT" "OMEGA_DOMAIN=$DOMAIN" "OMEGA_UID=$HOST_UID" "OMEGA_GID=$HOST_GID" "OMEGA_VERSION=dev" "OMEGA_API_IMAGE=$API_IMAGE" "OMEGA_WEB_IMAGE=$WEB_IMAGE" "OMEGA_CONSOLE_IMAGE=$CONSOLE_IMAGE" "OMEGA_EDGE_IMAGE=$EDGE_IMAGE" "OMEGA_DB_IMAGE=postgres:17.10-alpine" docker compose --project-name "$PROJECT" --project-directory "$ROOT" --env-file /dev/null -f "$ROOT/compose.yaml" -f "$ROOT/compose.dev.yaml")
-compose() { "${COMPOSE[@]}" "$@"; }
+compose() { bounded 15 "${COMPOSE[@]}" "$@"; }
 oneoff() {
   TASK="$PROJECT-task-$$"
   run 900 "${COMPOSE[@]}" run --rm --no-deps --name "$TASK" "$@"
@@ -176,7 +160,7 @@ case "$COMMAND" in
     compose ps --all
     printf '\nInstance: %s\nEntry: http://localhost:%s/web/\n' "$INSTANCE_ID" "$HTTP_PORT"
     df -h "$INPUT"
-    docker system df
+    bounded 15 docker system df
     curl --max-time 5 --fail --silent --show-error "http://127.0.0.1:$HTTP_PORT/api/v1/ping" || true
     printf '\n' ;;
   logs)
@@ -184,7 +168,7 @@ case "$COMMAND" in
   dev-reset)
     STAGE=reset
     printf 'DESTRUCTIVE dev reset\nInstance: %s\nInputs: %s\nProject: %s\nVolumes:\n' "$INSTANCE_ID" "$INPUT" "$PROJECT"
-    docker volume ls --filter "label=com.docker.compose.project=$PROJECT" --format '{{.Name}}'
+    bounded 15 docker volume ls --filter "label=com.docker.compose.project=$PROJECT" --format '{{.Name}}'
     if [ -z "$CONFIRM" ]; then
       [ -t 0 ] || { echo 'noninteractive reset requires --confirm EXACT_INSTANCE_ID' >&2; exit 3; }
       read -r -p "Type $INSTANCE_ID to delete this dev instance data: " CONFIRM
@@ -219,7 +203,7 @@ case "$COMMAND" in
     TASK="$PROJECT-cache-$$"
     CACHE_ARGS=()
     for volume in go_cache node_modules yarn_cache web_node_modules console_node_modules shared_node_modules; do
-      docker volume create --label "com.docker.compose.project=$PROJECT" --label "com.docker.compose.volume=$volume" "${PROJECT}_$volume" >/dev/null
+      bounded 20 docker volume create --label "com.docker.compose.project=$PROJECT" --label "com.docker.compose.volume=$volume" "${PROJECT}_$volume" >/dev/null
       CACHE_ARGS+=(--mount "type=volume,src=${PROJECT}_$volume,dst=/cache/$volume")
     done
     run 120 docker run --rm --name "$TASK" --user 0:0 --network none "${CACHE_ARGS[@]}" --entrypoint sh "$WEB_IMAGE" -c 'chown -R "$1:$2" /cache' sh "$HOST_UID" "$HOST_GID"

@@ -7,8 +7,9 @@ MATERIALS=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 BUNDLE=$(cd "$MATERIALS/.." && pwd -P)
 source "$MATERIALS/scripts/release-common.sh"
 COMMAND=${1:-}; [ "$#" -gt 0 ] && shift
-ENVIRONMENT=''; INPUT=''; VERSION=''; TRUSTED=''
+ENVIRONMENT=''; INPUT=''; VERSION=''; TRUSTED=''; OMEGA_ARGS=()
 while [ "$#" -gt 0 ]; do
+  if [ "$1" = -- ]; then shift; OMEGA_ARGS=("$@"); break; fi
   [ "$#" -ge 2 ] || fail 'every option requires a value'
   case "$1" in
     --env) ENVIRONMENT=$2 ;; --input) INPUT=$2 ;; --version) VERSION=$2 ;; --manifest-sha256) TRUSTED=$2 ;;
@@ -16,7 +17,16 @@ while [ "$#" -gt 0 ]; do
   esac
   shift 2
 done
-case "$COMMAND" in deploy|rollback|status|logs|down|tls-reload) ;; *) fail 'expected deploy, rollback, status, logs, down or tls-reload' ;; esac
+case "$COMMAND" in deploy|rollback|status|logs|down|tls-reload|omega) ;; *) fail 'expected deploy, rollback, status, logs, down, tls-reload or omega' ;; esac
+OMEGA_COMMAND=''
+if [ "$COMMAND" = omega ]; then
+  [ "${#OMEGA_ARGS[@]}" -gt 0 ] || OMEGA_ARGS=(--help)
+  # Preserve application stdout (including --json) independently of progress.
+  exec 3>&1 1>&2
+  for arg in "${OMEGA_ARGS[@]-}"; do
+    case "$arg" in --config|--config=*) fail 'maintenance config is selected by the explicit instance inputs';; --json) ;; *) OMEGA_COMMAND="${OMEGA_COMMAND:+$OMEGA_COMMAND }$arg";; esac
+  done
+elif [ "${#OMEGA_ARGS[@]}" -ne 0 ]; then fail 'application arguments require omega'; fi
 case "$ENVIRONMENT" in test|prod) ;; *) fail 'explicit --env test or prod required' ;; esac
 [ -n "$INPUT" ] && [ -n "$VERSION" ] || fail '--input and --version required'
 prerequisites
@@ -41,7 +51,7 @@ TOKEN="$$-$(date +%s)"; TASK=''; CHILD=''; STAGE=preflight; MAINTENANCE=false; L
 cleanup() {
   local code=$? lock
   trap - EXIT INT TERM
-  [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
+  stop_child "$CHILD" 5; CHILD=''
   [ -z "$TASK" ] || bounded 15 docker rm -f "$TASK" >/dev/null 2>&1 || true
   if [ "$code" -ne 0 ] && [ "$MAINTENANCE" = true ]; then touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; fi
   # Release owned locks before best-effort read-only diagnostics; an unavailable
@@ -66,17 +76,8 @@ trap 'exit 130' INT TERM
 acquire() { mkdir "$1" 2>/dev/null || { echo "operation lock held: $1" >&2; exit 6; }; LOCKS+=("$1"); printf '%s\n' "$TOKEN" > "$1/owner"; }
 acquire "$INPUT/.lock"
 LOCK_ROOT="/tmp/omega-locks-$(id -u)"; mkdir -p "$LOCK_ROOT"; chmod 700 "$LOCK_ROOT"; acquire "$LOCK_ROOT/$PROJECT"
-run() {
-  local limit=$1 start=$SECONDS result=0; shift
-  "$@" & CHILD=$!
-  while kill -0 "$CHILD" 2>/dev/null; do
-    if [ "$((SECONDS - start))" -ge "$limit" ]; then
-      kill -TERM "$CHILD" 2>/dev/null || true; sleep 2; kill -KILL "$CHILD" 2>/dev/null || true; wait "$CHILD" 2>/dev/null || true; CHILD=''; return 5
-    fi
-    sleep 1
-  done
-  wait "$CHILD" || result=$?; CHILD=''; return "$result"
-}
+run() { bounded "$@"; }
+
 tools() {
   TASK="$PROJECT-release-tools-$$"
   run 120 docker run --rm --pull never --platform linux/amd64 --name "$TASK" --network none --mount "type=bind,src=$INPUT,dst=/inputs" "$@" "$TOOLS_IMAGE" python /tools/inputs.py validate /inputs "$ENVIRONMENT"
@@ -97,12 +98,12 @@ printf 'version=%s\ncommit=%s\nmanifest_sha256=%s\nenvironment=%s\ninstance=%s\n
 [ ! -f "$INPUT/.release/current" ] || cp "$INPUT/.release/current" "$RUN_DIR/previous-success.txt"
 compose ps --all --format json > "$RUN_DIR/containers-before.json"
 for label in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=$ENVIRONMENT" "org.omega.input=$INPUT"; do
-  if docker volume inspect "${PROJECT}_db_data" >/dev/null 2>&1; then
-    [ "$(docker volume inspect --format "{{index .Labels \"${label%%=*}\"}}" "${PROJECT}_db_data")" = "${label#*=}" ] || fail 'database volume ownership mismatch'
+  if bounded 15 docker volume inspect "${PROJECT}_db_data" >/dev/null 2>&1; then
+    [ "$(bounded 15 docker volume inspect --format "{{index .Labels \"${label%%=*}\"}}" "${PROJECT}_db_data")" = "${label#*=}" ] || fail 'database volume ownership mismatch'
   fi
 done
 case "$COMMAND" in
-  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; docker system df; run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" openssl x509 -in /inputs/tls/cert.pem -noout -enddate; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
+  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; bounded 15 docker system df; run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" openssl x509 -in /inputs/tls/cert.pem -noout -enddate; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
   logs) compose logs --tail 200 --no-color; exit 0 ;;
   down) phase stop; run 120 "${COMPOSE[@]}" down --timeout 25; echo 'Stopped; persistent volumes retained'; exit 0 ;;
 esac
@@ -127,12 +128,50 @@ done > "$RUN_DIR/image-users.tsv"
 run 30 docker run --rm --pull never --network none --mount "type=bind,src=$RUN_DIR,dst=/evidence,readonly" "$TOOLS_IMAGE" python /tools/release.py model /evidence/compose.json "$ENVIRONMENT" "$INPUT" "$MATERIALS"
 phase candidate-config
 oneoff config validate > "$RUN_DIR/config.json"
+if [ "$COMMAND" = omega ]; then
+  phase application-maintenance
+  exec 1>&3 3>&-
+  case "$OMEGA_COMMAND" in
+    'health check')
+      cid=$(compose ps -q api); [ -n "$cid" ] || { echo 'API is not running' >&2; exit 5; }
+      for i in "${!IMAGE_ROLES[@]}"; do
+        [ "${IMAGE_ROLES[$i]}" != api ] || API_IMAGE=${IMAGE_IDS[$i]}
+      done
+      [ "$(bounded 10 docker inspect --format '{{.Image}}' "$cid")" = "$API_IMAGE" ] || fail 'health check requires the selected running API version'
+      TASK="$PROJECT-release-task-$$"
+      run 360 docker run --rm --pull never --platform linux/amd64 --name "$TASK" --network "container:$cid" --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges --entrypoint omega --mount "type=bind,src=$INPUT/api.yaml,dst=/etc/omega/app.yaml,readonly" --mount "type=bind,src=$INPUT/.runtime-secrets/api-runtime,dst=/run/secrets/db_password,readonly" "$API_IMAGE" --config /etc/omega/app.yaml "${OMEGA_ARGS[@]}"
+      TASK='';;
+    'db migrate'|'data ensure')
+      # Inspect any existing API to prevent an implicit version switch. A
+      # stopped/missing HTTP process does not prevent application maintenance.
+      was_running=false
+      cid=$(compose ps --all -q api)
+      if [ -n "$cid" ]; then
+        for i in "${!IMAGE_ROLES[@]}"; do
+          [ "${IMAGE_ROLES[$i]}" != api ] || [ "$(bounded 10 docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail 'maintenance writes require the selected existing API version'
+        done
+        was_running=$(bounded 10 docker inspect --format '{{.State.Running}}' "$cid")
+      fi
+      oneoff db status > "$RUN_DIR/maintenance-identity.json"
+      was_maintenance=false; [ ! -f "$INPUT/edge/maintenance" ] || was_maintenance=true
+      touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; MAINTENANCE=true
+      if [ "$was_running" = true ]; then run 60 "${COMPOSE[@]}" stop --timeout 25 api >&2; fi
+      oneoff "${OMEGA_ARGS[@]}"
+      if [ "$was_running" = true ]; then
+        run 150 "${COMPOSE[@]}" up -d --no-build --pull never --no-deps --wait --wait-timeout 120 api >&2
+        if [ "$was_maintenance" = false ]; then rm -f "$INPUT/edge/maintenance"; MAINTENANCE=false; fi
+      fi;;
+    *) oneoff "${OMEGA_ARGS[@]}";;
+  esac
+  phase complete
+  exit 0
+fi
 if [ "$COMMAND" = tls-reload ]; then
   # Renewal applies only to the actual running set, never silently promotes it.
   for service in db api web console edge; do
     cid=$(compose ps -q "$service"); [ -n "$cid" ] || fail "TLS reload requires running service: $service"
     for i in "${!IMAGE_ROLES[@]}"; do
-      [ "${IMAGE_ROLES[$i]}" != "$service" ] || [ "$(docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail 'TLS reload requires the current actual image set'
+      [ "${IMAGE_ROLES[$i]}" != "$service" ] || [ "$(bounded 10 docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail 'TLS reload requires the current actual image set'
     done
   done
   touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; MAINTENANCE=true
@@ -162,7 +201,7 @@ phase image-verification
 for service in db api web console edge; do
   cid=$(compose ps -q "$service"); [ -n "$cid" ] || fail "missing running service: $service"
   for i in "${!IMAGE_ROLES[@]}"; do
-    [ "${IMAGE_ROLES[$i]}" != "$service" ] || [ "$(docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail "running image differs: $service"
+    [ "${IMAGE_ROLES[$i]}" != "$service" ] || [ "$(bounded 10 docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail "running image differs: $service"
   done
 done
 phase tls-smoke

@@ -4,6 +4,7 @@ set -Eeuo pipefail
 umask 077
 ARCHIVE_SHA=$1; VERSION=$2; MANIFEST_SHA=$3; OLD_SHA=$4; OLD_VERSION=$5; OLD_MANIFEST=$6
 mkdir -p /evidence /instances
+chmod 755 /instances
 snapshot() {
   local code=$? input
   trap - EXIT
@@ -28,7 +29,20 @@ echo 'Empty isolated target image/container/volume store confirmed'
 expect_failure curl --noproxy '*' --max-time 5 https://1.1.1.1
 expect_failure curl --noproxy '*' --max-time 5 https://registry-1.docker.io/v2/
 expect_failure timeout 10 docker pull alpine:3.22.1
-bash /operator/scripts/import-release.sh /candidate.tar "$ARCHIVE_SHA" /releases/candidate
+# Exercise the actual operator boundary, not only root's permissive tar mode.
+addgroup -g 1000 omega-operator
+adduser -D -u 1000 -G omega-operator omega-operator
+chgrp omega-operator /var/run/docker.sock; chmod 660 /var/run/docker.sock
+mkdir -p /releases /tmp/operator/scripts
+chown omega-operator:omega-operator /releases
+cp /operator/scripts/*.sh /tmp/operator/scripts/
+chmod 755 /tmp/operator /tmp/operator/scripts; chmod 644 /tmp/operator/scripts/*.sh
+cp /candidate.tar /releases/operator-candidate.tar
+chown omega-operator:omega-operator /releases/operator-candidate.tar
+su -s /bin/bash omega-operator -c "bash /tmp/operator/scripts/import-release.sh /releases/operator-candidate.tar '$ARCHIVE_SHA' /releases/candidate"
+stat -c '%a %u:%g %n' /releases/candidate/materials/infra/db/10-omega.sh > /evidence/operator-import-modes.txt
+[ "$(stat -c '%a' /releases/candidate/materials/infra/db/10-omega.sh)" = 755 ]
+[ "$(stat -c '%u' /releases/candidate/materials/infra/db/10-omega.sh)" = 1000 ]
 if [ -n "$OLD_SHA" ]; then bash /operator/scripts/import-release.sh /old.tar "$OLD_SHA" /releases/old; fi
 TOOLS=$(docker image inspect --platform linux/amd64 --format '{{.Id}}' "omega-release/tools:$VERSION")
 DB_IMAGE=$(docker image inspect --platform linux/amd64 --format '{{.Id}}' "omega-release/db:$VERSION")
@@ -51,7 +65,9 @@ prepare() {
 }
 prepare test test 18080 18443
 prepare prod prod 28080 28443
-op deploy test test
+chown -R omega-operator:omega-operator /instances/test
+su -s /bin/bash omega-operator -c "/releases/candidate/materials/scripts/release.sh deploy --env test --input /instances/test --version '$VERSION' --manifest-sha256 '$MANIFEST_SHA'"
+echo 'Ordinary Docker-enabled UID1000 imported the bundle and completed cold test deployment'
 op deploy prod prod
 for service in db api web console edge; do
   test_id=$(docker inspect --format '{{.Image}}' "omega-offline-test-$service-1")
@@ -62,17 +78,45 @@ done
 op deploy test test
 op status test test
 echo 'Same-image promotion, repeat and status passed'
+maintenance() { /releases/candidate/materials/scripts/omega-release.sh --env test --input /instances/test --version "$VERSION" --manifest-sha256 "$MANIFEST_SHA" -- --json "$@"; }
+for command in version 'config validate' doctor 'health check' 'db status' 'db migrate' 'data ensure'; do
+  read -r -a words <<< "$command"
+  maintenance "${words[@]}" > "/evidence/omega-${command// /-}.json"
+done
+result=0; maintenance invalid-command > /evidence/omega-invalid.json 2>/dev/null || result=$?
+[ "$result" = 2 ] || fail 'formal omega failed to preserve invalid argument exit2'
+expect_failure /releases/candidate/materials/scripts/omega-release.sh --env prod --input /instances/test --version "$VERSION" --manifest-sha256 "$MANIFEST_SHA" -- doctor
+[ ! -f /instances/test/edge/maintenance ]
+docker stop --time 25 omega-offline-test-api-1 >/dev/null
+maintenance db migrate > /evidence/omega-stopped-api-migrate.json
+maintenance data ensure > /evidence/omega-stopped-api-ensure.json
+[ "$(docker inspect --format '{{.State.Running}}' omega-offline-test-api-1)" = false ] || fail 'standalone maintenance unexpectedly started HTTP'
+[ -f /instances/test/edge/maintenance ]
+op deploy test test
+echo 'Packaged same-version omega diagnostics, runtime health, safe maintenance writes and input/CLI refusals passed'
 API=$(docker ps -q --filter label=com.docker.compose.project=omega-offline-test --filter label=com.docker.compose.service=api)
 docker run --rm --pull never --network "container:$API" "$TOOLS" python -c '
-import urllib.request
+import socket,ssl,urllib.request,urllib.error
+try:
+ connection=socket.create_connection(("1.1.1.1",443),timeout=3)
+except OSError as error:
+ print("direct TCP denied",type(error).__name__,"errno",error.errno)
+else:
+ connection.close();raise AssertionError("outbound TCP connection succeeded")
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-for url in ["https://1.1.1.1", "https://example.com", "http://127.0.0.1:8080/api/v1/ping"]:
- try:
-  response=opener.open(url,timeout=3); print(url,response.status)
-  assert url.startswith("http://127.0.0.1"),"unexpected outbound network"
- except (OSError,urllib.error.URLError) as error:
-  print(url,type(error).__name__)
-  assert not url.startswith("http://127.0.0.1"),"internal API probe failed"
+try:
+ opener.open("https://example.com",timeout=3)
+except urllib.error.HTTPError:
+ raise AssertionError("outbound HTTP response proves connectivity")
+except urllib.error.URLError as error:
+ reason=error.reason
+ assert isinstance(reason,OSError) and not isinstance(reason,ssl.SSLError),"not a transport denial"
+ print("hostname transport denied",type(reason).__name__,"errno",reason.errno)
+else:
+ raise AssertionError("outbound HTTPS succeeded")
+response=opener.open("http://127.0.0.1:8080/api/v1/ping",timeout=3)
+assert response.status==200
+print("internal API",response.status)
 '
 echo 'Application namespace direct-IP and hostname/TLS egress refused; internal API succeeds'
 cp /candidate.tar /bad.tar

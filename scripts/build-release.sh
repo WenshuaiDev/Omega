@@ -36,7 +36,7 @@ IMAGES=()
 for role in api web console edge tools db; do IMAGES+=("omega-release/$role:$VERSION"); done
 docker image save --platform linux/amd64 --output "$OUTPUT/images.tar" "${IMAGES[@]}"
 cp -p "$ROOT"/compose{,.release,.test,.prod}.yaml "$OUTPUT/materials/"
-cp -p "$ROOT/scripts/"{release,release-common,import-release}.sh "$OUTPUT/materials/scripts/"
+cp -p "$ROOT/scripts/"{release,release-common,import-release,process,omega-release}.sh "$OUTPUT/materials/scripts/"
 cp -p "$ROOT/infra/db/10-omega.sh" "$OUTPUT/materials/infra/db/"
 cp -p "$ROOT/config/templates/"* "$OUTPUT/templates/"
 cp -p "$ROOT/docs/implementation/release.md" "$OUTPUT/OPERATIONS.md"

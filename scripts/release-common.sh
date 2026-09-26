@@ -3,19 +3,8 @@
 set -Eeuo pipefail
 umask 077
 fail() { echo "omega release: $*" >&2; exit 2; }
-bounded() {
-  local limit=$1 started=$SECONDS pid result=0; shift
-  "$@" & pid=$!
-  while kill -0 "$pid" 2>/dev/null; do
-    if [ "$((SECONDS - started))" -ge "$limit" ]; then
-      kill -TERM "$pid" 2>/dev/null || true; sleep 1; kill -KILL "$pid" 2>/dev/null || true
-      wait "$pid" 2>/dev/null || true; return 5
-    fi
-    sleep 0.1
-  done
-  wait "$pid" || result=$?
-  return "$result"
-}
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)/process.sh"
+
 sha256() {
   if command -v sha256sum >/dev/null; then sha256sum "$1" | awk '{print $1}';
   elif command -v shasum >/dev/null; then shasum -a 256 "$1" | awk '{print $1}';

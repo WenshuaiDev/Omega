@@ -121,6 +121,7 @@ run go-$MODE docker run "${COMMON[@]}" --network "$NETWORK" \
   -e 'OMEGA_TEST_ADMIN_DSN=postgres://postgres:admin-secret@db:5432/omega?sslmode=disable' \
   "$GO" go run scripts/quality/go_check.go "$MODE"
 run frontend-$MODE docker run "${COMMON[@]}" --network "$NETWORK" "$NODE" node scripts/quality/frontend.mjs "$MODE"
+run wrapper-tests docker run "${COMMON[@]}" --network none "$GO" python3 -m unittest scripts.tests.wrappers_test -v
 run checker-tests docker run "${COMMON[@]}" --network none "$TOOLS" python -m unittest discover -s scripts/quality -p '*_test.py' -v
 if [ "$MODE" = check ]; then
   CLEAN_ENV=(env -i "PATH=$PATH" "HOME=$HOME")
