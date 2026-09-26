@@ -53,3 +53,27 @@ mode or value changes. Public proxy directory is0755 and contains no secrets.
 - Live isolated PostgreSQL technical initialization and health checked separately.
 - Full application startup remains to be run after API/frontend branch integration.
 - Native Linux amd64 validation remains pending; no native evidence is claimed.
+
+## Integrated runtime verification
+
+Full startup succeeded on the macOS arm64 host (Docker Linux arm64), isolated
+project `omega-dev-03f989f9a0e6`, input `/private/tmp/omega13 full input`, HTTP20837.
+All five services became healthy and both apps, both runtime JSONs and public ping
+passed through edge. Failed initial preparation retries preserved the same input
+and DB: cache initialization now explicitly selects root; developer-only tmpfs
+permits execution (Go temporary binaries and Yarn shims) and provides1GiB for Go
+compilation/TypeScript patching. Formal tmpfs restrictions remain intact.
+
+`./scripts/omega.sh --input DIRECTORY -- [--json] COMMAND` provides same-source
+maintenance using the selected instance and locks. Commands use a built temporary
+binary so CLI exit codes survive the Go launcher; `health check` executes inside
+the API container against its real HTTP readiness. Write commands stop API first
+and restart only after success. Application CLI remains unaware of Docker.
+Version, real health/doctor, invalid-command exit2, simultaneous-command exit6,
+controlled COMPOSE/OMEGA environment pollution, and runtime CREATE TABLE denial
+were exercised on this instance. Credential/config hashes and data persistence
+are additionally covered by the acceptance harness; this note does not substitute
+for its broader scenarios or pending native Linux amd64 evidence.
+
+Compose2.24.4+ is required for the dev-only `!override` tmpfs settings; final model
+validation reports an unsupported Compose parser before launching services.
