@@ -1,0 +1,148 @@
+{
+  "exit_code": 0,
+  "cases": [
+    {
+      "case": "web-healthy",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:01.632Z",
+      "detail": "Actual React UI and DB-backed API status rendered through Nginx."
+    },
+    {
+      "case": "console-healthy",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:02.049Z",
+      "detail": "Actual React UI and DB-backed API status rendered through Nginx."
+    },
+    {
+      "case": "both-apps-hmr",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:02.242Z",
+      "detail": "Both visible DOMs updated through edge WebSockets; document sentinels retained and navigation counts zero."
+    },
+    {
+      "case": "web-deep-route",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:02.536Z",
+      "detail": "Visible link navigation and explicit deep-route reload rendered app/API successfully."
+    },
+    {
+      "case": "web-config-wrong-app",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:03.144Z",
+      "detail": "Explicit boot failure, actual invalid JSON response, and zero attempted API requests."
+    },
+    {
+      "case": "web-recovered-wrong-app",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:03.515Z",
+      "detail": "Fresh page after exact config restoration renders APIok."
+    },
+    {
+      "case": "web-config-malformed-json",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:04.108Z",
+      "detail": "Explicit boot failure, actual invalid JSON response, and zero attempted API requests."
+    },
+    {
+      "case": "web-recovered-malformed-json",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:04.479Z",
+      "detail": "Fresh page after exact config restoration renders APIok."
+    },
+    {
+      "case": "console-deep-route",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:04.699Z",
+      "detail": "Visible link navigation and explicit deep-route reload rendered app/API successfully."
+    },
+    {
+      "case": "console-config-wrong-app",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:05.296Z",
+      "detail": "Explicit boot failure, actual invalid JSON response, and zero attempted API requests."
+    },
+    {
+      "case": "console-recovered-wrong-app",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:05.681Z",
+      "detail": "Fresh page after exact config restoration renders APIok."
+    },
+    {
+      "case": "console-config-malformed-json",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:06.294Z",
+      "detail": "Explicit boot failure, actual invalid JSON response, and zero attempted API requests."
+    },
+    {
+      "case": "console-recovered-malformed-json",
+      "status": "PASS",
+      "finished_at": "2026-09-26T02:59:06.664Z",
+      "detail": "Fresh page after exact config restoration renders APIok."
+    }
+  ],
+  "events": [
+    {
+      "evidence": "web-initial",
+      "app": "web"
+    },
+    {
+      "evidence": "console-initial",
+      "app": "console"
+    },
+    {
+      "evidence": "web-hmr",
+      "app": "web"
+    },
+    {
+      "evidence": "console-hmr",
+      "app": "console"
+    },
+    {
+      "evidence": "web-deep-route",
+      "app": "web"
+    },
+    {
+      "evidence": "web-config-wrong-app",
+      "app": "web"
+    },
+    {
+      "evidence": "web-recovered-wrong-app",
+      "app": "web"
+    },
+    {
+      "evidence": "web-config-malformed-json",
+      "app": "web"
+    },
+    {
+      "evidence": "web-recovered-malformed-json",
+      "app": "web"
+    },
+    {
+      "evidence": "console-deep-route",
+      "app": "console"
+    },
+    {
+      "evidence": "console-config-wrong-app",
+      "app": "console"
+    },
+    {
+      "evidence": "console-recovered-wrong-app",
+      "app": "console"
+    },
+    {
+      "evidence": "console-config-malformed-json",
+      "app": "console"
+    },
+    {
+      "evidence": "console-recovered-malformed-json",
+      "app": "console"
+    }
+  ],
+  "restored": {
+    "/fixtures/App.tsx": true,
+    "/fixtures/web.json": true,
+    "/fixtures/console.json": true
+  },
+  "entry_kind": "actual edge network namespace; host published ingress tested separately",
+  "native_platform_acceptance": "pending #20 unless a separate complete native run is recorded"
+}

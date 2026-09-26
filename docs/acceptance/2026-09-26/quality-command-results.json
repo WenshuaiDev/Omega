@@ -1,0 +1,83 @@
+[
+  {
+    "run": "omega21-final-test",
+    "command": "./scripts/test.sh --output <evidence directory> (PATH denies host Go/Node/Yarn/npm/corepack/Python/jq)",
+    "expected_exit": 0,
+    "result": {
+      "mode": "test",
+      "stage": "complete",
+      "exit": "0",
+      "finished": "2026-09-26T02:04:41Z"
+    },
+    "source_and_platform": [
+      "2026-09-26T02:04:13Z",
+      "91e05b52a67410cc65208e06265a489f92d527f8",
+      " M scripts/quality/run.sh",
+      "Darwin arm64",
+      "client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64",
+      "Docker Compose version v5.5.1",
+      "formal image target=linux/amd64; cross-build is not native-platform acceptance"
+    ]
+  },
+  {
+    "run": "omega21-negative-go",
+    "command": "./scripts/test.sh --output <evidence directory> (isolated invalid Go test fixture)",
+    "expected_exit": 1,
+    "result": {
+      "mode": "test",
+      "stage": "go-test",
+      "exit": "1",
+      "finished": "2026-09-26T02:03:13Z"
+    },
+    "source_and_platform": [
+      "2026-09-26T02:02:58Z",
+      "91e05b52a67410cc65208e06265a489f92d527f8",
+      "?? services/api/internal/app/quality_failure_test.go",
+      "Darwin arm64",
+      "client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64",
+      "Docker Compose version v5.5.1",
+      "formal image target=linux/amd64; cross-build is not native-platform acceptance"
+    ]
+  },
+  {
+    "run": "omega21-negative-lock",
+    "command": "./scripts/test.sh --output <evidence directory> (isolated manifest/lock mismatch)",
+    "expected_exit": 1,
+    "result": {
+      "mode": "test",
+      "stage": "frontend-test",
+      "exit": "1",
+      "finished": "2026-09-26T02:03:39Z"
+    },
+    "source_and_platform": [
+      "2026-09-26T02:03:23Z",
+      "91e05b52a67410cc65208e06265a489f92d527f8",
+      " M package.json",
+      "Darwin arm64",
+      "client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64",
+      "Docker Compose version v5.5.1",
+      "formal image target=linux/amd64; cross-build is not native-platform acceptance"
+    ]
+  },
+  {
+    "run": "omega21-timeout-evidence",
+    "command": "./scripts/test.sh --timeout 1 --output <evidence directory>",
+    "expected_exit": 5,
+    "result": {
+      "mode": "test",
+      "stage": "go-test",
+      "exit": "5",
+      "finished": "2026-09-26T02:07:25Z"
+    },
+    "source_and_platform": [
+      "2026-09-26T02:07:16Z",
+      "cce6725439b9140b0beb319bf07f12f4153f4f5f",
+      " M scripts/quality/model_check.py",
+      " M scripts/quality/run.sh",
+      "Darwin arm64",
+      "client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64",
+      "Docker Compose version v5.5.1",
+      "formal image target=linux/amd64; cross-build is not native-platform acceptance"
+    ]
+  }
+]

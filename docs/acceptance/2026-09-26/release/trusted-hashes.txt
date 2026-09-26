@@ -1,0 +1,7 @@
+version=0.1.0-issue13-rc7
+candidate_source_commit=4f6f5b3a2b1f847f4f9fa1ca1f5f94ff56c7930d
+dispatcher_source_commit=578cae2a4b62662d834225f7ee9ccdf2982b37f3
+archive=/private/tmp/omega13-artifacts/0.1.0-issue13-rc7.tar
+archive_sha256=5723efe8e9ad447c681111ab7793940154e4e24ad1ff9c3777d5b45f0cd06b17
+manifest_sha256=341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e
+Trust bootstrap: archive/manifest hashes recorded from completed build output separately from delivered archive. Final acceptance arguments use those recorded values, not an untrusted archive sidecar.

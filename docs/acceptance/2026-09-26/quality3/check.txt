@@ -1,0 +1,168 @@
+Command: ./scripts/acceptance.sh quality --output <new evidence directory>
+===== environment.txt =====
+2026-09-26T02:53:30Z
+bbd6a3309a32991eb46d55a873635da14a05073c
+Darwin arm64
+client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64
+Docker Compose version v5.5.1
+formal image target=linux/amd64; cross-build is not native-platform acceptance
+
+===== result.txt =====
+mode=check
+stage=complete
+exit=0
+cleanup_complete=true
+finished=2026-09-26T02:56:06Z
+
+===== tools-versions.log =====
+tools runtime pins verified: Python 3.13.7, PyYAML 6.0.2, OpenSSL 3.5.8
+
+===== go-check.log =====
+[/workspace/services/api] go vet ./...
+go: downloading github.com/jackc/pgx/v5 v5.11.0
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+go: downloading github.com/jackc/pgpassfile v1.0.0
+go: downloading golang.org/x/text v0.29.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+[/workspace/services/api] go mod verify
+all modules verified
+[/workspace/services/api] go test -count=1 -timeout=180s -v ./...
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/devwatch	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/omega	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/cmd/omega-api	[no test files]
+=== RUN   TestProcesses
+--- PASS: TestProcesses (3.03s)
+PASS
+ok  	github.com/WenshuaiDev/Omega/services/api/integration	3.033s
+?   	github.com/WenshuaiDev/Omega/services/api/internal/app	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/cli	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/config	[no test files]
+?   	github.com/WenshuaiDev/Omega/services/api/internal/database	[no test files]
+[/workspace/services/api] go build ./...
+
+===== frontend-check.log =====
+yarn install --immutable
+➤ YN0000: · Yarn 4.18.1
+➤ YN0000: ┌ Resolution step
+➤ YN0000: └ Completed
+➤ YN0000: ┌ Fetch step
+➤ YN0013: │ 194 packages were added to the project (+ 157.05 MiB).
+➤ YN0000: └ Completed in 2s 818ms
+➤ YN0000: ┌ Link step
+➤ YN0000: └ Completed in 0s 935ms
+➤ YN0000: · Done in 3s 832ms
+yarn format:check
+Checking formatting...
+All matched files use Prettier code style!
+yarn exec prettier --check apps/console
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/console typecheck
+yarn workspace @omega/console lint
+yarn workspace @omega/console test
+
+ RUN  v5.0.1 /workspace/apps/console
+
+ ✓ src/app.test.ts (5 tests) 104ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  02:53:58
+   Duration  516ms (environment 67%, tests 23%, transform 8%, import 2%, worker 1%)
+
+yarn workspace @omega/console build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 26 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:  0.33 kB
+dist/assets/index-fC0oYdhb.css    0.99 kB │ gzip:  0.56 kB
+dist/assets/index-DoUSdVCA.js    13.69 kB │ gzip:  5.14 kB
+dist/assets/mount-B1bg0LIG.js   221.29 kB │ gzip: 69.30 kB
+
+✓ built in 80ms
+yarn exec prettier --check apps/web
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/web typecheck
+yarn workspace @omega/web lint
+yarn workspace @omega/web test
+
+ RUN  v5.0.1 /workspace/apps/web
+
+ ✓ src/app.test.ts (5 tests) 94ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  02:54:02
+   Duration  486ms (environment 69%, tests 22%, transform 6%, import 2%, worker 1%)
+
+yarn workspace @omega/web build
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 26 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.44 kB │ gzip:  0.33 kB
+dist/assets/index-fC0oYdhb.css    0.99 kB │ gzip:  0.56 kB
+dist/assets/index-Btyeh0Oc.js    13.68 kB │ gzip:  5.14 kB
+dist/assets/mount-B1bg0LIG.js   221.29 kB │ gzip: 69.30 kB
+
+✓ built in 80ms
+yarn exec prettier --check packages/reference-app
+Checking formatting...
+All matched files use Prettier code style!
+yarn workspace @omega/reference-app typecheck
+yarn workspace @omega/reference-app lint
+yarn workspace @omega/reference-app test
+
+ RUN  v5.0.1 /workspace/packages/reference-app
+
+ ✓ src/config.test.ts (14 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  02:54:06
+   Duration  86ms (transform 55%, import 25%, tests 14%, worker 6%)
+
+
+===== checker-tests.log =====
+test_host_paths_are_compared_without_container_existence (model_check_test.FormalModelTests.test_host_paths_are_compared_without_container_existence) ... ok
+test_inherited_image_user_is_checked (model_check_test.FormalModelTests.test_inherited_image_user_is_checked) ... ok
+test_realistic_unsafe_overrides_rejected (model_check_test.FormalModelTests.test_realistic_unsafe_overrides_rejected) ... ok
+test_valid_formal_topology (model_check_test.FormalModelTests.test_valid_formal_topology) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK
+test: final Compose topology and deployment policies passed
+prod: final Compose topology and deployment policies passed
+test: final Compose topology and deployment policies passed
+
+===== wrapper-tests.log =====
+test_acceptance_requires_distinct_old_candidate_before_work (scripts.tests.wrappers_test.WrapperLifecycle.test_acceptance_requires_distinct_old_candidate_before_work) ... ok
+test_browser_cancellation_with_unresponsive_daemon_records_failure (scripts.tests.wrappers_test.WrapperLifecycle.test_browser_cancellation_with_unresponsive_daemon_records_failure) ... ok
+test_dev_cancel_releases_locks_before_unresponsive_docker_cleanup (scripts.tests.wrappers_test.WrapperLifecycle.test_dev_cancel_releases_locks_before_unresponsive_docker_cleanup) ... ok
+test_dev_preflight_daemon_timeout (scripts.tests.wrappers_test.WrapperLifecycle.test_dev_preflight_daemon_timeout) ... ok
+test_dev_volume_query_failure_never_generates_identity_or_credentials (scripts.tests.wrappers_test.WrapperLifecycle.test_dev_volume_query_failure_never_generates_identity_or_credentials) ... ok
+test_dispatcher_cancellation_reaps_child_and_records_failed_suite (scripts.tests.wrappers_test.WrapperLifecycle.test_dispatcher_cancellation_reaps_child_and_records_failed_suite) ... ok
+test_import_disk_refuses_before_destination_and_load (scripts.tests.wrappers_test.WrapperLifecycle.test_import_disk_refuses_before_destination_and_load) ... ok
+test_quality_cancellation_with_unresponsive_daemon_retains_report (scripts.tests.wrappers_test.WrapperLifecycle.test_quality_cancellation_with_unresponsive_daemon_retains_report) ... ok
+test_shared_wait_preserves_exit_and_bounds_term_ignoring_child (scripts.tests.wrappers_test.WrapperLifecycle.test_shared_wait_preserves_exit_and_bounds_term_ignoring_child) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 45.366s
+
+OK
+
+===== binary-versions.log =====
+{"operation_id":"7d560cea1a8148f52069479d","version":"quality","commit":"bbd6a3309a32991eb46d55a873635da14a05073c","command":"version","started_at":"2026-09-26T02:55:31.410882963Z","finished_at":"2026-09-26T02:55:31.410960588Z","exit_code":0,"result":"ok","data":{"schema_max":1,"schema_min":1}}
+
+===== inherited-image-users.log =====
+test: final Compose topology and deployment policies passed
+prod: final Compose topology and deployment policies passed
+
+===== unchanged-dependencies.log =====
+All dependency manifests/locks and original source unchanged

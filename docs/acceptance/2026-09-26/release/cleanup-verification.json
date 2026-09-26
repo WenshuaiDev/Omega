@@ -1,0 +1,28 @@
+{
+  "scope": "Independent read-only check after final success and cleanup of prior failed private harness. Only acceptance-labeled outer Docker resources selected.",
+  "checks": [
+    {
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--filter",
+        "label=omega.acceptance.run"
+      ],
+      "exit": 0,
+      "remaining_ids": []
+    },
+    {
+      "argv": [
+        "docker",
+        "volume",
+        "ls",
+        "-q",
+        "--filter",
+        "label=omega.acceptance.run"
+      ],
+      "exit": 0,
+      "remaining_ids": []
+    }
+  ]
+}

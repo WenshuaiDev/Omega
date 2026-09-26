@@ -1,0 +1,18 @@
+Recorded from completed isolated Docker tool execution; this file is a transcript, not a fresh rerun.
+Date: 2026-09-26
+Host: macOS arm64; Docker daemon: Linux arm64
+Go image: golang:1.27.1-bookworm
+Database image: postgres:17.10-alpine
+Command: docker run --rm --name omega13-dsn-privilege-go --network omega13-dsn-privilege-check --mount type=bind,src=<test-worktree>,dst=/workspace,readonly -w /workspace -e GOFLAGS=-mod=readonly -e GOTOOLCHAIN=local -e OMEGA_TEST_ADMIN_DSN=<isolated fixture DSN; administrator password deliberately different from original fixed text> golang:1.27.1-bookworm go test -count=1 -v ./services/api/integration
+Actual output:
+=== RUN   TestProcesses
+--- PASS: TestProcesses (4.07s)
+PASS
+ok github.com/WenshuaiDev/Omega/services/api/integration 4.077s
+Actual exit status: 0
+The test changes were uncommitted during execution, then committed byte-identically in a86171c. Production API module sources were unchanged. The file SHA-256 and commit below bind the test content; this is not a whole-repository final revision certification.
+Both test containers and the dedicated test network were removed after completion.
+
+Committed test content:
+a86171c427cab9b3474d0651d8c123b7651c6505
+d1b3a671d53e40ebe7e6ecacf309cc8c19fca393348c7809dd6f3519e0d58273  services/api/integration/process_test.go

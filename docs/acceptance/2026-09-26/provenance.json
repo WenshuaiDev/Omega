@@ -1,0 +1,1280 @@
+{
+  "generated_from": "Existing completed execution records; collection itself does not rerun tests.",
+  "sanitization": "Copied only selected successful/expected-negative records; private temporary source/body paths replaced where present; no credential contents, private keys, response bodies or unrelated host inventory included. Source-file SHA256 values bind originals, not publisher signatures. Text trailing whitespace normalized. Empty image Config.User is displayed as <empty; Docker default root>. Container snapshots retain only name/service/image/state/health/exit fields. committed_artifacts hashes bind the selected sanitized files.",
+  "sources": [
+    {
+      "source": "/tmp/omega13-dev-evidence-final/platform.txt",
+      "sha256": "e5033b81f4d31abd8f15c5aac1bbb11e63f264e2fedce38fe213a48a24a17bf0"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/results.tsv",
+      "sha256": "7ce648f1779a314302f76a2d0f6f90b231aa344a3b211db468a2ae9c12d8f097"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/platform.txt",
+      "sha256": "18fb195ae6cb6086a5dce458592a1edff177d4b569894a1fc0f4fb9418699187"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/results.tsv",
+      "sha256": "50cf534509809eb1af9746a4c1dee5be489c46e7a52bf9285e76d85b7c4086ac"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-19-proxy-rediscovery/addresses.txt",
+      "sha256": "18e660d36e5f04df0dce53d36c3a40b8b4e4e0521516d772aad9f119cce10395"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/blocked-client.txt",
+      "sha256": "8d5e5c245cbddbe84907412a3f12240da5711e857280593a9445f536b8dbd420"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/1.argv",
+      "sha256": "577b74cdb3af398cc2efea625f91181e37eeb4e8826c576ac20283172100078a"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/1.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/2.argv",
+      "sha256": "5f7ff2766b5fd3c3867892398f7dbd8b8d4ea407a758a7becd788de0b7736817"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/2.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/2.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/3.argv",
+      "sha256": "c06de0b20f47d9c777e65fade9f8845725bde2291c9e2f546da012337f2ddb27"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/3.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/3.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/4.argv",
+      "sha256": "e9a067e95464b40a4d69ea431b215f141484aaba14057d4c336e0dd310d5e228"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/4.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/4.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/5.argv",
+      "sha256": "3b8af4539db8588269b1387a4750c1a8bb04be35f0da2c3832185a53d15504c3"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/5.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/5.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/6.argv",
+      "sha256": "6711938edc7eb403107eadbcba203891b28109dd78a8b23437f2bb41cf565f9e"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/6.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/6.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/7.argv",
+      "sha256": "93c8e965aeb8adeb225b0c217df9cc92171f3ce23e1aa118bc6ac5165ce23a3c"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/7.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/7.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/8.argv",
+      "sha256": "d377ded3b36f55bedb7e3cb0ec13e92b8127dd7107cec818e6971e3036bc6669"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/8.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/8.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/9.argv",
+      "sha256": "4a215e3c2f89ec3607d40bb6f6702ae24b23c74913a3439577cc178a1b86fa90"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/9.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/9.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/10.argv",
+      "sha256": "698ce34652062f0b3ba6747f83bd0bfd6a4fe6f4408d0a9634fc99942b46651f"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/10.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/10.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/11.argv",
+      "sha256": "9f8533b0c5528a87c9eed7baa19559176509c0fb0422b12b0408aa2c57310496"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/11.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/11.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/12.argv",
+      "sha256": "00c5b162c60a2953a799af8967a6466a064756d73a4b73667c21e9eca040f67a"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/12.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-secret-boundary/OMEGA-16-24-secret-boundaries/12.stdout",
+      "sha256": "6b3c238ebcf1f3c07cf0e556faa82c6b8fe96840ff4b6b7e9962a2d855843a0b"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/environment.txt",
+      "sha256": "ca2afcaf5d7125f1c648cca5c5fab7237b24ba6b4c3d5af87323c21038fce8aa"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/result.txt",
+      "sha256": "c0183594891a6706ae48e27f04204ec94fd06449f9df24333680f13a764628b0"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/tools-versions.log",
+      "sha256": "8b2fcf0260f8ff6314385df3e71354ab017106f3baddd8f1870eb5f266526a78"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/go-check.log",
+      "sha256": "a370dc1d9d496b618d04bc83a6df85196aec49e9f3a79ca6a305d8c93b227f83"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/frontend-check.log",
+      "sha256": "4b7b899afe7c439599a5d5347379b19fc3b34b4ad7d308fc45fd8245bb529143"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/checker-tests.log",
+      "sha256": "b327179ac28f0273bbdccfdedb430939f5f37aa1e94ea954c0e8d6bb08665fc7"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/binary-versions.log",
+      "sha256": "488b008773783e9719718a57d97bf8a98db1fdbf42c3ef4d25aaab3c2088581a"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/inherited-image-users.log",
+      "sha256": "97cdf23f02b24751906dc60e1bb913a7a4fff6cf30add4361b3ba53c62e55e0b"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/unchanged-dependencies.log",
+      "sha256": "a62d4b1bd8ac200567422ba1839dbac1f29428711a74aec71dd1b363718107da"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/production-images.txt",
+      "sha256": "121d6a0f976b86ec06f863e34c53b867d195a4195618e09dc06e5b26bd612a91"
+    },
+    {
+      "source": "/tmp/omega21-final-test/result.txt",
+      "sha256": "89f4c8743b36ccfc871981cc636a5848c067d89cdb9d2adea2ee337a22f19a48"
+    },
+    {
+      "source": "/tmp/omega21-final-test/environment.txt",
+      "sha256": "ee470f9b917f704ab91a3d3bea9b35552006002142d057f477f633974605e709"
+    },
+    {
+      "source": "/tmp/omega21-negative-go/result.txt",
+      "sha256": "72e5901892bafb24da2566929721056fe56c518dfbe5638e459e1a8bdb17f813"
+    },
+    {
+      "source": "/tmp/omega21-negative-go/environment.txt",
+      "sha256": "9918bff9d71168793d362606064788a6a2cd112586cc3961595aca0338cf9dbb"
+    },
+    {
+      "source": "/tmp/omega21-negative-lock/result.txt",
+      "sha256": "64052e368efc81755b9919b41ac5fa647ebeefa45ecbfdad9849ed934e91f2c1"
+    },
+    {
+      "source": "/tmp/omega21-negative-lock/environment.txt",
+      "sha256": "137d4247e16410125b21ba5ff8aa06817f708c6ea246a9614cf2388244ecaafc"
+    },
+    {
+      "source": "/tmp/omega21-timeout-evidence/result.txt",
+      "sha256": "5997f013b43fc7099f7cb7a78327982de7bd72b442f5bd7060b1d1909103b183"
+    },
+    {
+      "source": "/tmp/omega21-timeout-evidence/environment.txt",
+      "sha256": "d81842405206309d6e896e5ec32573cf1226384757e894205a0d887a42d087d0"
+    },
+    {
+      "source": "/tmp/omega13-api-extended-evidence/result.txt",
+      "sha256": "0349e7993924d378cea494c464f41c5694dc591edad8426181c835b35dca6352"
+    },
+    {
+      "source": "/tmp/omega13-api-extended-evidence/test-commit.txt",
+      "sha256": "f23cef6985c9c2fb0c2cf9e2562516af23e9c6102727b7fe3328e23f5c7e2713"
+    },
+    {
+      "source": "/tmp/omega13-api-extended-evidence/test-source.sha256",
+      "sha256": "ca3f2c54e41a127d2e4c3ad9f80cbba4851c9f9e8ffb3fdb01532fe8553e106d"
+    },
+    {
+      "source": "/tmp/omega13-dev-input-policy-evidence.txt",
+      "sha256": "71640a29493a09c2f9e886a1701a3e779d8612207199797b7adc2ca2d9d10d63"
+    },
+    {
+      "source": "/tmp/omega13-context/browser-evidence.md",
+      "sha256": "13bf4841cad30b023fc595a5ee01554f1d627894c54dc0180dbf74cfab5f6e7e"
+    },
+    {
+      "source": "/tmp/omega21-policy-final/image-users.tsv",
+      "sha256": "565ff3935d161cb23ee08807c5b2eef8c07f0e132339470813d9123a45f04d18"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/platform.txt",
+      "sha256": "e3f90b761f12ca092fd24797246d9914fc299e29369fd6b60cf6e163b6a6f35d"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/browser-image.txt",
+      "sha256": "32ae8a86a8b9d5e8bb06468e61bea81b28611d2385b824f879ee24ba29606dab"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/browser-version.json",
+      "sha256": "9b271e1e11a48269d5b3f4ca68b007d181e62c3f82b852b17ba92f49009ad564"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/result.txt",
+      "sha256": "25810e7fd325466a73aa4b2a760af4bc3222c07a58cd3fc7b0aa64eb65290948"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/results.json",
+      "sha256": "95246bb65da670460c4ac29ac2fc8d537e96037e564d909cbc5a608184ddc994"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-hmr.json",
+      "sha256": "6d15c4e2caeb027bac5452d5605c30f7a2a13426cbd8727a9f89b1f7bd15ef3e"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/console-hmr.json",
+      "sha256": "6661db48456fc508e97b981f7aebf6e8a9e32d6eec62e976c9e99f0d7606b35b"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-config-wrong-app.json",
+      "sha256": "e3b3a1af268b88346f2e5a1e76cffc06ead23e71568adfad3788138a0ee28cce"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/console-config-wrong-app.json",
+      "sha256": "83f5312ddce9afea9c894b4c70f8b4d695bc9415d673787b6b7d14494dc09e66"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-config-malformed-json.json",
+      "sha256": "e3b3a1af268b88346f2e5a1e76cffc06ead23e71568adfad3788138a0ee28cce"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/console-config-malformed-json.json",
+      "sha256": "83f5312ddce9afea9c894b4c70f8b4d695bc9415d673787b6b7d14494dc09e66"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-deep-route.json",
+      "sha256": "3da72383b049aad9af0c93b5205b6a06c2a146d11f6c997da75fdc10cee58d1f"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/console-deep-route.json",
+      "sha256": "48fb6d05eac59132f629906bde271835106c5c64b347f9d3430cb7aee0e23d8c"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-hmr.png",
+      "sha256": "e9729dcd611dd198b04f26c57da1bf9075a61f2cc68e53780e9a37394e54872d"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/console-hmr.png",
+      "sha256": "d323cac737b943e5fa6430f5214181ebfdf88effbd4f15c5dff512ae98c54620"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/browser/web-config-wrong-app.png",
+      "sha256": "645e6f4edc364a799916078522f3d0b5c1b79f1f3628a15d952dcec2873dead1"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/platform.txt",
+      "sha256": "43995d283ad3fc34999bb0864000fae6a146a1cdc6f67c480ecc13a78a7e8e86"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "source": "/tmp/omega23-browser-first/results.tsv",
+      "sha256": "b2f79345d7a40b91f0c4f04abdd7dacace4eba784b7c833b9db92535ced8eb42"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/environment.txt",
+      "sha256": "d32e85af0c145e0f94e9ea5a9b5bece3c09cafc45d7b8af2c6deac26c731cae4"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/result.txt",
+      "sha256": "da28b14a94c8e7d8e423f0368719d4faed4b8e716db08c35df0dc623280feaad"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/tools-versions.log",
+      "sha256": "8b2fcf0260f8ff6314385df3e71354ab017106f3baddd8f1870eb5f266526a78"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/go-check.log",
+      "sha256": "f8ea52227218fffa1b09bb0b1b900a7521a8eb0a3cd4a26fa311a4ac184787c9"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/frontend-check.log",
+      "sha256": "ae8576f612dbfe144129057afb16e6119cd960f1fae40f666be2a77f063222b8"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/checker-tests.log",
+      "sha256": "b327179ac28f0273bbdccfdedb430939f5f37aa1e94ea954c0e8d6bb08665fc7"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/binary-versions.log",
+      "sha256": "3d32c2bed858804e153e87bda311547dc28ae48c3712e6aaa4388cf2dfbf5d82"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/inherited-image-users.log",
+      "sha256": "97cdf23f02b24751906dc60e1bb913a7a4fff6cf30add4361b3ba53c62e55e0b"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/unchanged-dependencies.log",
+      "sha256": "a62d4b1bd8ac200567422ba1839dbac1f29428711a74aec71dd1b363718107da"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/production-images.txt",
+      "sha256": "dc07a0c1df486d011e14b64827f60e44a3da845e59442bbd2400389440510c84"
+    },
+    {
+      "source": "/tmp/omega23-final-quality/image-users.tsv",
+      "sha256": "565ff3935d161cb23ee08807c5b2eef8c07f0e132339470813d9123a45f04d18"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/platform.txt",
+      "sha256": "a1a1d0ffab3c23c8254857951e72ae9a591bbbd6109ae83ad2659030cf488508"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/result.txt",
+      "sha256": "df45fcc41edb3e78102bd303fa9dc267d3dffeb08b1a03faa730992ededabb39"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/results.tsv",
+      "sha256": "b3eb1e3ec5a8182acaf286facb4515e4e737fcc9a28ad99b2d649c151dc030a6"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/browser/platform.txt",
+      "sha256": "7b860c55a472f7a0af428ae9b6be0b10e54ef785cad04e0fc244bd803d9fbf11"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/browser/result.txt",
+      "sha256": "2d3b1183be97f9c1298f6bd16f9e49ff160cc5fe91dfb97c99dd304d528a8adc"
+    },
+    {
+      "source": "/tmp/omega23-browser-negative-evidence/browser/results.json",
+      "sha256": "afd6bde73f300899686d5b3530092f471e6b716edad3da0d0bd30907d2d1afa2"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-07-missing-credential/1.exit",
+      "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-07-missing-credential/1.argv",
+      "sha256": "90ef489c6a4f65de05c9742b282d8ae26e234b9a2a816e745e1dd814231249c3"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-07-missing-credential/1.stderr",
+      "sha256": "0dd7781e423512fa7a6bd310ac0f50f0846704c0d344e6ecc4f7496d02b9f508"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-07-missing-credential/1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-07-missing-credential/2.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-14-dependency/1.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-14-dependency/1.argv",
+      "sha256": "90ef489c6a4f65de05c9742b282d8ae26e234b9a2a816e745e1dd814231249c3"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-14-dependency/1.stderr",
+      "sha256": "da784c24c91d6bbe7b67ab7c2cbaf6e5dd9992304b65b9851695b58d8babe9fc"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-14-dependency/1.stdout",
+      "sha256": "aa62a93d583deb5f85beef2b5941391119d3cad9aa619a9d4227169defb83d26"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-14-dependency/2.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/1.exit",
+      "sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/1.argv",
+      "sha256": "42250b8adacc74ee97aff3cae579ff496bbed092e18a96963263bdf2e1678f7d"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/1.stderr",
+      "sha256": "aceac04da952e52b244bb0fd6c304c20f2e70254a6592c2d8b647a143bc1c247"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/1.stdout",
+      "sha256": "7e26f1bda3e69226c4ef0bf1b65bee9b07158f7af545fe098cc6aaaf45189962"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/2.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-08-09-migration/3.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/1.exit",
+      "sha256": "06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/1.argv",
+      "sha256": "e74d6dfd9e0e3cd6e6e9c642a9dcfaeaca418d484cd42c403dd17b156f8deaa4"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/1.stderr",
+      "sha256": "16eb017e0f78b7e16f90da8e31f36bdc084ce436dfbb5599d30fdd03306a322c"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-37-concurrency-cancel/2.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/1.exit",
+      "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/1.argv",
+      "sha256": "a7c31a557a434be77d8b3dd8dc593b3eed5bbc48276934805eacb1bc3c4b6fff"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/1.stderr",
+      "sha256": "1457fec3da256fc40a4b6f4ed4e8e6e60c7b92ccf2be678177298d4bd53873e0"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/1.stdout",
+      "sha256": "bec2e7135325f04f44ffd4281df002880120824bde29698c23162ded77bc59df"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/2.exit",
+      "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/2.argv",
+      "sha256": "7f87fa0a963535e27c77ce8ee36abf5c2c6632b4242c042dd76f765bb23fd9ac"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/2.stderr",
+      "sha256": "cab773a6d543c9ea4ec2fc40cf13f097d9cda17d5f56c08283a1e70acacb8aae"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/2.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/3.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/4.exit",
+      "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/4.argv",
+      "sha256": "7f87fa0a963535e27c77ce8ee36abf5c2c6632b4242c042dd76f765bb23fd9ac"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/4.stderr",
+      "sha256": "d37a52646413d363c0e9e8592d96ce3a4717e8dbe5e2614a4ca9c1c9218d59e7"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/4.stdout",
+      "sha256": "46e944477afe2875ee6aa367d7a46913654244d4d5d53c232dcf2a56c1d36df1"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/5.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-dev-evidence-final/OMEGA-12-reset-boundary/6.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/platform.txt",
+      "sha256": "ad30808e909bb3cfcde58ce232091f3475736e2a70cf1c0cf88d3bf7827be051"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/results.tsv",
+      "sha256": "2454222c7f6cf3cd1ffdd27438e33a19992d5c7f8760d1d4c91ef2986e9f511c"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/environment.txt",
+      "sha256": "978cdc1e30b380b81bb3e83dc36bef3772446d6951fc5eb20f48e231eac4a62f"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/result.txt",
+      "sha256": "f67d586f60164cefd2a8fbb23f218e364a5536b881102533d74277f92a6f0d36"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/tools-versions.log",
+      "sha256": "8b2fcf0260f8ff6314385df3e71354ab017106f3baddd8f1870eb5f266526a78"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/go-check.log",
+      "sha256": "2fafcf91e3b691f9eeae7d2f01075bebdb5556085f0acfff020cc7a3f2fd7f4e"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/frontend-check.log",
+      "sha256": "50b280a66444a98809fbe51c605340a54a53ffd59987d9b88fd4258abb64d7ae"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/checker-tests.log",
+      "sha256": "50510106dedc4628ee37134765905d7ebe73c658aa5a99ae72476dfce32812b1"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/wrapper-tests.log",
+      "sha256": "1fa09bda1a78259dcd5cd51fab2469ad643792f2330105f3fbc64d112e1b8d17"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/binary-versions.log",
+      "sha256": "e1d47611cbb42b46f1a3b4757e1af301d63f3a8b806fec20e31e49c20c96c401"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/inherited-image-users.log",
+      "sha256": "97cdf23f02b24751906dc60e1bb913a7a4fff6cf30add4361b3ba53c62e55e0b"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/unchanged-dependencies.log",
+      "sha256": "a62d4b1bd8ac200567422ba1839dbac1f29428711a74aec71dd1b363718107da"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/production-images.txt",
+      "sha256": "c79def2193a907be4d6863bf7486f41412e6f082fdde5d42816a1f98b6b0b28f"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality3/quality/image-users.tsv",
+      "sha256": "565ff3935d161cb23ee08807c5b2eef8c07f0e132339470813d9123a45f04d18"
+    },
+    {
+      "source": "/tmp/omega13-context/spec-review-final.md",
+      "sha256": "ed9c2c5fd6bd9b79120e7f3d8253e1c7a38e86c905342f35d371ab855c30168f"
+    },
+    {
+      "source": "/tmp/omega13-context/standards-review-final.md",
+      "sha256": "1336faa6edd851f12e1417c6ecc9959519425a3f98c8309fd921b1d5f1da0420"
+    },
+    {
+      "source": "/tmp/omega13-context/review-fix-results.md",
+      "sha256": "a59e44e1f29396cfc3a103ab56a04665486b2c903b4b67c9a41e355c5e7874ed"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality/result.txt",
+      "sha256": "df45fcc41edb3e78102bd303fa9dc267d3dffeb08b1a03faa730992ededabb39"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality/quality/result.txt",
+      "sha256": "b6aa9edc92e41a7e6a38d95e7bc234b41f271d199f31497f4b7861bc76eedf18"
+    },
+    {
+      "source": "/tmp/omega13-review-final-quality/quality.log",
+      "sha256": "92200d530f805d6e4686d156faf4338f3e768d39dcd4e2d6d430a212ec5881f5"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-evidence/result.txt",
+      "sha256": "df45fcc41edb3e78102bd303fa9dc267d3dffeb08b1a03faa730992ededabb39"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-evidence/release/result.txt",
+      "sha256": "b8ab4a20c4770a166b304d14af274f2d1ab1cd834a2e6263fc7db6442f4295bf"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-evidence/release/drill.log",
+      "sha256": "ac36493fb2abdedbc5c350b24fba9c1c8190de3de4939f71ba595c806c9bf344"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/platform.txt",
+      "sha256": "e1d9dd3ab49e2a5984ded8f4020c115eea29686646d3eb6de0b255bab2870d26"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/browser-image.txt",
+      "sha256": "83f2f1072c332640185f31b5ff9d66a1c7800ee96b525865ed728560bee5df35"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/browser-version.json",
+      "sha256": "9b271e1e11a48269d5b3f4ca68b007d181e62c3f82b852b17ba92f49009ad564"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/result.txt",
+      "sha256": "fe2db4780fef068782e8d27744f98de2637f61bf5f6c06fe2bf6ea5839fc4c2e"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/results.json",
+      "sha256": "cad41aaf2591bcb49c1d5ebb5124417bba51c0b1bf05a5ba1aeef4809727a8ca"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-hmr.json",
+      "sha256": "ffbaa81aa84dde6a05a5ef3fcd9ca2a4fcb750265f29a627e7ba8302a2ab7a01"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/console-hmr.json",
+      "sha256": "1c21b29b67994454478111db34bd18591ce0fa2db97cd3382783d264ce9bb2f3"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-config-wrong-app.json",
+      "sha256": "e3b3a1af268b88346f2e5a1e76cffc06ead23e71568adfad3788138a0ee28cce"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/console-config-wrong-app.json",
+      "sha256": "83f5312ddce9afea9c894b4c70f8b4d695bc9415d673787b6b7d14494dc09e66"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-config-malformed-json.json",
+      "sha256": "e3b3a1af268b88346f2e5a1e76cffc06ead23e71568adfad3788138a0ee28cce"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/console-config-malformed-json.json",
+      "sha256": "83f5312ddce9afea9c894b4c70f8b4d695bc9415d673787b6b7d14494dc09e66"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-deep-route.json",
+      "sha256": "55316cc15147180765492d66e6659adbc1ba4d02f81d8e5dd0c3340cb81ebf14"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/console-deep-route.json",
+      "sha256": "7d0b6d3483d62acfe57e6c57d6483aa12ed94e01743d473e35487a0e49571409"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-hmr.png",
+      "sha256": "033471ce74e49a31b78ccdd301215912c98e276a1d984f2329f1dd69a21baa7c"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/console-hmr.png",
+      "sha256": "79de285611798d47acfb9b56ca49159202c58bf78cde192d1d348f34287ae811"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/browser/web-config-wrong-app.png",
+      "sha256": "645e6f4edc364a799916078522f3d0b5c1b79f1f3628a15d952dcec2873dead1"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/platform.txt",
+      "sha256": "f01b735c5b10ce83d40cf263179fa6a5b2cd937b3c2c9125da830b20e281c5b0"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/results.tsv",
+      "sha256": "b2f79345d7a40b91f0c4f04abdd7dacace4eba784b7c833b9db92535ced8eb42"
+    },
+    {
+      "source": "/tmp/omega13-review-final-browser/cleanup-verification.json",
+      "sha256": "ec7834726411e5297beefa33f262376d67b8e68284dfeaa5bd579f12b75b72db"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/platform.txt",
+      "sha256": "3fabbcd8e56cff0b93807045820746d48f4977f8d07b60f8a177f9d2f898fb16"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/results.tsv",
+      "sha256": "de65999102fcb6c4e145bc45049e63094b9effc0d3f5759bdf45a3009d73464f"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/platform.txt",
+      "sha256": "2572401e6573fbb72166f94a9151c2a3de0d0bf0769b4fbc471e85a6064a53a6"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/target-platform.txt",
+      "sha256": "bb27c8534630cdd328cc874ab89834419f5096778b483721895b031411852531"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/result.txt",
+      "sha256": "6c3661bb4c804eb5f5bf920ef37f268d82ab5f67852ab1eac0eb804339827c8c"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/operator-import-modes.txt",
+      "sha256": "4949b0521befb771370853741fbbacb4e24fb27326e76c09bba66bbf06a7fb1e"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/promotion-images.tsv",
+      "sha256": "74887b57a8a663837cb993a18f73e8d7825c2208f932d0d3145afdb41600a23d"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/rollback-db-before.txt",
+      "sha256": "70451240bbbc7e405fad0072678615a4e162628662457f89b1f697a98bcfa9b6"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/rollback-db-after.txt",
+      "sha256": "70451240bbbc7e405fad0072678615a4e162628662457f89b1f697a98bcfa9b6"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/rollback-old-image.txt",
+      "sha256": "89dc0699b31af52fb5597b828da26a941c3087aa3e028d27197f52095fee65b5"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-failure-state.txt",
+      "sha256": "5dd325456da8d3b0ef7c700716759a224f6005d71f2b3221250804732ccc37b5"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-human.txt",
+      "sha256": "70eba714ad23c55cb54334665ce4facfa23f6d8842ad0d263dbc4809d33d6d93"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-config-validate.json",
+      "sha256": "d3a6b806697785e2b836f950d615ce34b20cc499b9c77ae122106ecd1cfe4c09"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-data-ensure.json",
+      "sha256": "652c6d5139f684dd49e2c6947d28849a79a7824046e64e28d6f2c14c883e0753"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-db-migrate.json",
+      "sha256": "3887f9189fece41b605acbb8ffb19f32a51bce4e0fc87f3928a8504ae94eb064"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-db-status.json",
+      "sha256": "de11b8441e602c2236fcc1ff37341e7e4233b158d4e45b56aac28670eca5af29"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-doctor.json",
+      "sha256": "2bfd9f1d2c8151c893ae4b3149c9f5cd9ff7e9290458ecda8019816fe0632ff0"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-health-check.json",
+      "sha256": "3cb072c2960ef604a4931050fba4fd986fe77be3599367518b53228f04689342"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-invalid.json",
+      "sha256": "5e7d950729d425c14bcd39dad087a7c01463986627c2cc16b4cd100807515f6e"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-stopped-api-ensure.json",
+      "sha256": "55dd1941d22e4c95dd7675c12a54185a29e76fa36bf284346e716c9fa80a05f2"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-stopped-api-migrate.json",
+      "sha256": "3fb98a609f283473d1ff05fb5840689557f14166fb7f7ef2abe296981bce7c9e"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/omega-version.json",
+      "sha256": "d78294a18b4fa38818b31659ea92c0882947b620ffce260f1856676cc4245cef"
+    },
+    {
+      "source": "/tmp/omega13-artifacts/0.1.0-issue13-rc7/manifest.tsv",
+      "sha256": "341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e"
+    },
+    {
+      "source": "/tmp/omega13-artifacts/0.1.0-issue13-rc7/evidence/build.json",
+      "sha256": "6f696b14e363342332abc257c78c3522833a4b9ca5fc4b1011d85fe6afb7d5a2"
+    },
+    {
+      "source": "/tmp/omega13-artifacts/0.1.0-issue13-rc7/evidence/api-version.json",
+      "sha256": "8afa6ede7bcae1dbdbe0367f86acc208431bbe49a5443e4fe2542dc6c11d24c4"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/drill.log",
+      "sha256": "db97640c90012536fcf766b9b1863b497678e901b25f79fa91b03f43fdb9f895"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release.argv",
+      "sha256": "c56d55a7ecfa5b20883948928560311749d9d15c6b4209805112194fed9d4ae5"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-operations/runs/20260926T031009Z-119538/journal.tsv",
+      "sha256": "97ce5240ed95c4b71f2482c88920abc45d1b06b5a816894f4304bf0e398c9661"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-operations/runs/20260926T031009Z-119538/target.txt",
+      "sha256": "edbe236491e1bd9a42586f62705305dc22c4f744c2c643e1b6932d6131512735"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-operations/runs/20260926T031009Z-119538/actual-images.txt",
+      "sha256": "c3a0b63a99771c9bb036870528f5213306696ebbd7fa3d317fa83593adc41674"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-operations/runs/20260926T031009Z-119538/migration.json",
+      "sha256": "dd8a92bc680b70b8444dbc0b0f0794777bf69208f8bb2342ce3bec91dfe3365a"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/migration-operations/runs/20260926T031009Z-119538/containers.json",
+      "sha256": "bf2907c70993491568aee8224cee520dd6894108580da4b6fed360e9a2bc1c11"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030159Z-60599/journal.tsv",
+      "sha256": "ca3a74eb15e5aa5c0f0e7c8b4956317cad8df75f2c6d0228af17a2db2f8181db"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030159Z-60599/target.txt",
+      "sha256": "d3df86d1f0ed3f93aafda023dfecc9ec31aca278b35d24cd69bb52af60839af1"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030159Z-60599/actual-images.txt",
+      "sha256": "0d58c22f1f9427631b3e1cef6ed3041a9c2a5becac414d43bbf681e325ce2419"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030159Z-60599/containers.json",
+      "sha256": "bad21628af7047075a62e4a83fb7fd05c3d46a75aea9d76c3c5d58f224b132f8"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030307Z-70130/journal.tsv",
+      "sha256": "8ba45479848360755ebc864c5a2f5f5e53a2e3747456ae5f6fee659f53669db7"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030307Z-70130/target.txt",
+      "sha256": "d3df86d1f0ed3f93aafda023dfecc9ec31aca278b35d24cd69bb52af60839af1"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030307Z-70130/actual-images.txt",
+      "sha256": "1fbdd74d88d51146a8db33aad76345aa1377ec2b9a4d1942cd7dc731d4d13f6b"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/release/test-operations/runs/20260926T030307Z-70130/containers.json",
+      "sha256": "a1612739a2af0648a979b9bb9313a2107b3d4fad482f13b6df47bee99f35910c"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/trusted-hashes.txt",
+      "sha256": "c915e71e4f4dbd357f1dc5f747794334646c6453531de84dfde959436f747052"
+    },
+    {
+      "source": "/tmp/omega13-context/rc7-unified-final/cleanup.txt",
+      "sha256": "5539ba044e68ffd081559a76c2cad5f1413aa8323496cca5cec0f04f4c857374"
+    }
+  ],
+  "committed_artifacts": [
+    {
+      "path": "2026-09-26/api-process.txt",
+      "sha256": "d213147e13085a6415346cea4b0e7a73fb9a381d2bde2c22fe9f3aa81384b902"
+    },
+    {
+      "path": "2026-09-26/browser/browser-image.txt",
+      "sha256": "83f2f1072c332640185f31b5ff9d66a1c7800ee96b525865ed728560bee5df35"
+    },
+    {
+      "path": "2026-09-26/browser/browser-version.json",
+      "sha256": "09e3c010c90e4cb961e5cd35eb4e1573b195c56bf5c6d0b1367fcf2e4cc54e0c"
+    },
+    {
+      "path": "2026-09-26/browser/cleanup-verification.json",
+      "sha256": "ec7834726411e5297beefa33f262376d67b8e68284dfeaa5bd579f12b75b72db"
+    },
+    {
+      "path": "2026-09-26/browser/console-config-malformed-json.json",
+      "sha256": "04c54072223c1369383ffebea66633d54e60be69a7cb5a3a0d5a90b291ed1674"
+    },
+    {
+      "path": "2026-09-26/browser/console-config-wrong-app.json",
+      "sha256": "04c54072223c1369383ffebea66633d54e60be69a7cb5a3a0d5a90b291ed1674"
+    },
+    {
+      "path": "2026-09-26/browser/console-deep-route.json",
+      "sha256": "611c3a5499076abdc515f6c907396378e0e35b9f8f9534ccad78944c82e591d8"
+    },
+    {
+      "path": "2026-09-26/browser/console-hmr.json",
+      "sha256": "a7a129c8895db53ec10503fce611cb8eaca73bd02b2d978c2b4d652bd49faeb9"
+    },
+    {
+      "path": "2026-09-26/browser/console-hmr.png",
+      "sha256": "79de285611798d47acfb9b56ca49159202c58bf78cde192d1d348f34287ae811"
+    },
+    {
+      "path": "2026-09-26/browser/dispatcher-platform.txt",
+      "sha256": "f01b735c5b10ce83d40cf263179fa6a5b2cd937b3c2c9125da830b20e281c5b0"
+    },
+    {
+      "path": "2026-09-26/browser/dispatcher-result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "path": "2026-09-26/browser/dispatcher-results.tsv",
+      "sha256": "b2f79345d7a40b91f0c4f04abdd7dacace4eba784b7c833b9db92535ced8eb42"
+    },
+    {
+      "path": "2026-09-26/browser/expected-failure.json",
+      "sha256": "90f02494f39fab6d85e8512d425974ca5f4e318e3c8eaf22ae6065dc82493e43"
+    },
+    {
+      "path": "2026-09-26/browser/platform.txt",
+      "sha256": "e1d9dd3ab49e2a5984ded8f4020c115eea29686646d3eb6de0b255bab2870d26"
+    },
+    {
+      "path": "2026-09-26/browser/result.txt",
+      "sha256": "fe2db4780fef068782e8d27744f98de2637f61bf5f6c06fe2bf6ea5839fc4c2e"
+    },
+    {
+      "path": "2026-09-26/browser/results.json",
+      "sha256": "8f345215ccc5d5ea26736ced1197c12aebe13b711eb1c3d52259850ad7993f4b"
+    },
+    {
+      "path": "2026-09-26/browser/web-config-malformed-json.json",
+      "sha256": "ea90d921a8c861273d23331e8eebbc7fd0203c3ad9c4c321617f2faa1875c7bd"
+    },
+    {
+      "path": "2026-09-26/browser/web-config-wrong-app.json",
+      "sha256": "ea90d921a8c861273d23331e8eebbc7fd0203c3ad9c4c321617f2faa1875c7bd"
+    },
+    {
+      "path": "2026-09-26/browser/web-config-wrong-app.png",
+      "sha256": "645e6f4edc364a799916078522f3d0b5c1b79f1f3628a15d952dcec2873dead1"
+    },
+    {
+      "path": "2026-09-26/browser/web-deep-route.json",
+      "sha256": "f1508b8ba5bddefbb8bfc68ec36ae0670fc08589490820c51813d90ea29985f4"
+    },
+    {
+      "path": "2026-09-26/browser/web-hmr.json",
+      "sha256": "cd90bfa7d08b43b93671fbc0d146193229d2f52c0c8f4f32101150e6040ad0dc"
+    },
+    {
+      "path": "2026-09-26/browser/web-hmr.png",
+      "sha256": "033471ce74e49a31b78ccdd301215912c98e276a1d984f2329f1dd69a21baa7c"
+    },
+    {
+      "path": "2026-09-26/browser-baseline-results.json",
+      "sha256": "d8d282e13c40b6c72d34accc079391c8898be3231869e9a5a1237c3a9ca04beb"
+    },
+    {
+      "path": "2026-09-26/browser-manual.md",
+      "sha256": "4f54be03f351b56b481fd26d4d11476b51ee7de773a1ae38ae7840afa0bb074a"
+    },
+    {
+      "path": "2026-09-26/dev-failure-proof.json",
+      "sha256": "7fb8820a1ba2e26f67ae7c300c122b53c87e61f8ed68641e66591c3dfa44ac0b"
+    },
+    {
+      "path": "2026-09-26/dev-network-and-lock.txt",
+      "sha256": "a344fa01a86eb3154bfad8aa30958a835e35d93a615b2fa475448a0fe23cdac8"
+    },
+    {
+      "path": "2026-09-26/dev-platform.txt",
+      "sha256": "4da9781bcb432a02ebefa93a68f1cdb45ad669b782ca1e50122a9a9f4bf281dc"
+    },
+    {
+      "path": "2026-09-26/dev-results.tsv",
+      "sha256": "7ce648f1779a314302f76a2d0f6f90b231aa344a3b211db468a2ae9c12d8f097"
+    },
+    {
+      "path": "2026-09-26/input-policy.txt",
+      "sha256": "a58fe26b6c58979496ba7d3c756bbd4a2110ef6f0f510b35a78268938fea450a"
+    },
+    {
+      "path": "2026-09-26/quality-command-results.json",
+      "sha256": "4b1c77c4c196262c0768519fcccc108c6df121d0e3f3a413bc8e2bd7eed5def5"
+    },
+    {
+      "path": "2026-09-26/quality-final-image-users.tsv",
+      "sha256": "d08bda4ef4282bab05b2ba24530c7d92052eb23a2268e1cee08a227e3eb658f4"
+    },
+    {
+      "path": "2026-09-26/quality-final-production-images.txt",
+      "sha256": "dc07a0c1df486d011e14b64827f60e44a3da845e59442bbd2400389440510c84"
+    },
+    {
+      "path": "2026-09-26/quality-final.txt",
+      "sha256": "75cd8134f01a28f5a35d02a78f87fa7e732312e89e3aae79b389ead91f21f50e"
+    },
+    {
+      "path": "2026-09-26/quality-image-users.tsv",
+      "sha256": "d08bda4ef4282bab05b2ba24530c7d92052eb23a2268e1cee08a227e3eb658f4"
+    },
+    {
+      "path": "2026-09-26/quality-production-images.txt",
+      "sha256": "121d6a0f976b86ec06f863e34c53b867d195a4195618e09dc06e5b26bd612a91"
+    },
+    {
+      "path": "2026-09-26/quality.txt",
+      "sha256": "904ec1b6e3f0ab592af66cc45a50d12956909f0ea25f54e4b5b6e13c8d73a01b"
+    },
+    {
+      "path": "2026-09-26/quality3/check.txt",
+      "sha256": "631018397b06ae29dd67c13cae60be0e61001690a6f83994107f58d2ebc84766"
+    },
+    {
+      "path": "2026-09-26/quality3/image-users.tsv",
+      "sha256": "d08bda4ef4282bab05b2ba24530c7d92052eb23a2268e1cee08a227e3eb658f4"
+    },
+    {
+      "path": "2026-09-26/quality3/platform.txt",
+      "sha256": "ad30808e909bb3cfcde58ce232091f3475736e2a70cf1c0cf88d3bf7827be051"
+    },
+    {
+      "path": "2026-09-26/quality3/production-images.txt",
+      "sha256": "c79def2193a907be4d6863bf7486f41412e6f082fdde5d42816a1f98b6b0b28f"
+    },
+    {
+      "path": "2026-09-26/quality3/result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "path": "2026-09-26/quality3/results.tsv",
+      "sha256": "2454222c7f6cf3cd1ffdd27438e33a19992d5c7f8760d1d4c91ef2986e9f511c"
+    },
+    {
+      "path": "2026-09-26/release/README.md",
+      "sha256": "97b4834b516ff4a1fe44b9a172c82d8c95af9951a6e8a46bd7814670e7c72d69"
+    },
+    {
+      "path": "2026-09-26/release/api-version.json",
+      "sha256": "8afa6ede7bcae1dbdbe0367f86acc208431bbe49a5443e4fe2542dc6c11d24c4"
+    },
+    {
+      "path": "2026-09-26/release/build.json",
+      "sha256": "6f696b14e363342332abc257c78c3522833a4b9ca5fc4b1011d85fe6afb7d5a2"
+    },
+    {
+      "path": "2026-09-26/release/canceled-operation/actual-images.txt",
+      "sha256": "1fbdd74d88d51146a8db33aad76345aa1377ec2b9a4d1942cd7dc731d4d13f6b"
+    },
+    {
+      "path": "2026-09-26/release/canceled-operation/containers.json",
+      "sha256": "6c6d9f132e789465f206caec7485eaeb9350048fae7159bb949f9be4c7d918e1"
+    },
+    {
+      "path": "2026-09-26/release/canceled-operation/journal.tsv",
+      "sha256": "8ba45479848360755ebc864c5a2f5f5e53a2e3747456ae5f6fee659f53669db7"
+    },
+    {
+      "path": "2026-09-26/release/canceled-operation/target.txt",
+      "sha256": "d3df86d1f0ed3f93aafda023dfecc9ec31aca278b35d24cd69bb52af60839af1"
+    },
+    {
+      "path": "2026-09-26/release/cleanup-verification.json",
+      "sha256": "dd14968a3fb9dde2d1374245891d34945efc345482660f9f47b09f77f3e4b9f1"
+    },
+    {
+      "path": "2026-09-26/release/cleanup.txt",
+      "sha256": "5539ba044e68ffd081559a76c2cad5f1413aa8323496cca5cec0f04f4c857374"
+    },
+    {
+      "path": "2026-09-26/release/delegated-command.txt",
+      "sha256": "f30ed2af3c44b7d18db0ad9fd9613c6b75d9cc1f8dcfe45b6ef03567f3cba01d"
+    },
+    {
+      "path": "2026-09-26/release/dispatcher-platform.txt",
+      "sha256": "3fabbcd8e56cff0b93807045820746d48f4977f8d07b60f8a177f9d2f898fb16"
+    },
+    {
+      "path": "2026-09-26/release/dispatcher-result.txt",
+      "sha256": "764888c7d3d4658b9c87a4602f2b7e332ee8bf7f87d76ad5ff6184fd5f5c3091"
+    },
+    {
+      "path": "2026-09-26/release/dispatcher-results.tsv",
+      "sha256": "de65999102fcb6c4e145bc45049e63094b9effc0d3f5759bdf45a3009d73464f"
+    },
+    {
+      "path": "2026-09-26/release/manifest.tsv",
+      "sha256": "341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure/actual-images.txt",
+      "sha256": "c3a0b63a99771c9bb036870528f5213306696ebbd7fa3d317fa83593adc41674"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure/containers.json",
+      "sha256": "223fd94a57686d36fdeb2b69a862996ed3539f4d25886fdf39b7cf01fc845969"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure/journal.tsv",
+      "sha256": "97ce5240ed95c4b71f2482c88920abc45d1b06b5a816894f4304bf0e398c9661"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure/migration.json",
+      "sha256": "dd8a92bc680b70b8444dbc0b0f0794777bf69208f8bb2342ce3bec91dfe3365a"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure/target.txt",
+      "sha256": "edbe236491e1bd9a42586f62705305dc22c4f744c2c643e1b6932d6131512735"
+    },
+    {
+      "path": "2026-09-26/release/migration-failure-state.txt",
+      "sha256": "a7ed8c679e495e1333b040716cf87a171c97e315bc2b5b0c8779ce81f485b530"
+    },
+    {
+      "path": "2026-09-26/release/omega-config-validate.json",
+      "sha256": "d3a6b806697785e2b836f950d615ce34b20cc499b9c77ae122106ecd1cfe4c09"
+    },
+    {
+      "path": "2026-09-26/release/omega-data-ensure.json",
+      "sha256": "652c6d5139f684dd49e2c6947d28849a79a7824046e64e28d6f2c14c883e0753"
+    },
+    {
+      "path": "2026-09-26/release/omega-db-migrate.json",
+      "sha256": "3887f9189fece41b605acbb8ffb19f32a51bce4e0fc87f3928a8504ae94eb064"
+    },
+    {
+      "path": "2026-09-26/release/omega-db-status.json",
+      "sha256": "de11b8441e602c2236fcc1ff37341e7e4233b158d4e45b56aac28670eca5af29"
+    },
+    {
+      "path": "2026-09-26/release/omega-doctor.json",
+      "sha256": "2bfd9f1d2c8151c893ae4b3149c9f5cd9ff7e9290458ecda8019816fe0632ff0"
+    },
+    {
+      "path": "2026-09-26/release/omega-health-check.json",
+      "sha256": "3cb072c2960ef604a4931050fba4fd986fe77be3599367518b53228f04689342"
+    },
+    {
+      "path": "2026-09-26/release/omega-human.txt",
+      "sha256": "70eba714ad23c55cb54334665ce4facfa23f6d8842ad0d263dbc4809d33d6d93"
+    },
+    {
+      "path": "2026-09-26/release/omega-invalid.json",
+      "sha256": "5e7d950729d425c14bcd39dad087a7c01463986627c2cc16b4cd100807515f6e"
+    },
+    {
+      "path": "2026-09-26/release/omega-stopped-api-ensure.json",
+      "sha256": "55dd1941d22e4c95dd7675c12a54185a29e76fa36bf284346e716c9fa80a05f2"
+    },
+    {
+      "path": "2026-09-26/release/omega-stopped-api-migrate.json",
+      "sha256": "3fb98a609f283473d1ff05fb5840689557f14166fb7f7ef2abe296981bce7c9e"
+    },
+    {
+      "path": "2026-09-26/release/omega-version.json",
+      "sha256": "d78294a18b4fa38818b31659ea92c0882947b620ffce260f1856676cc4245cef"
+    },
+    {
+      "path": "2026-09-26/release/operator-import-modes.txt",
+      "sha256": "4949b0521befb771370853741fbbacb4e24fb27326e76c09bba66bbf06a7fb1e"
+    },
+    {
+      "path": "2026-09-26/release/platform.txt",
+      "sha256": "2572401e6573fbb72166f94a9151c2a3de0d0bf0769b4fbc471e85a6064a53a6"
+    },
+    {
+      "path": "2026-09-26/release/promotion-images.tsv",
+      "sha256": "74887b57a8a663837cb993a18f73e8d7825c2208f932d0d3145afdb41600a23d"
+    },
+    {
+      "path": "2026-09-26/release/readiness-failure/actual-images.txt",
+      "sha256": "0d58c22f1f9427631b3e1cef6ed3041a9c2a5becac414d43bbf681e325ce2419"
+    },
+    {
+      "path": "2026-09-26/release/readiness-failure/containers.json",
+      "sha256": "824943c1f3689e5269f7a372c1457195470f58f9d36433736a5967816a942ffa"
+    },
+    {
+      "path": "2026-09-26/release/readiness-failure/journal.tsv",
+      "sha256": "ca3a74eb15e5aa5c0f0e7c8b4956317cad8df75f2c6d0228af17a2db2f8181db"
+    },
+    {
+      "path": "2026-09-26/release/readiness-failure/target.txt",
+      "sha256": "d3df86d1f0ed3f93aafda023dfecc9ec31aca278b35d24cd69bb52af60839af1"
+    },
+    {
+      "path": "2026-09-26/release/result.txt",
+      "sha256": "6c3661bb4c804eb5f5bf920ef37f268d82ab5f67852ab1eac0eb804339827c8c"
+    },
+    {
+      "path": "2026-09-26/release/rollback-db-after.txt",
+      "sha256": "70451240bbbc7e405fad0072678615a4e162628662457f89b1f697a98bcfa9b6"
+    },
+    {
+      "path": "2026-09-26/release/rollback-db-before.txt",
+      "sha256": "70451240bbbc7e405fad0072678615a4e162628662457f89b1f697a98bcfa9b6"
+    },
+    {
+      "path": "2026-09-26/release/rollback-old-image.txt",
+      "sha256": "89dc0699b31af52fb5597b828da26a941c3087aa3e028d27197f52095fee65b5"
+    },
+    {
+      "path": "2026-09-26/release/selected-drill.log",
+      "sha256": "613c9bc1a945fb275a1fc00d1264057e37bd134d051d832febb2d1c4057f5e07"
+    },
+    {
+      "path": "2026-09-26/release/target-platform.txt",
+      "sha256": "bb27c8534630cdd328cc874ab89834419f5096778b483721895b031411852531"
+    },
+    {
+      "path": "2026-09-26/release/trusted-hashes.txt",
+      "sha256": "c915e71e4f4dbd357f1dc5f747794334646c6453531de84dfde959436f747052"
+    },
+    {
+      "path": "2026-09-26/secret-boundary-assertions.json",
+      "sha256": "a094ec24db74364b3b0bd0f4aa80f8ba6006c4af4fa6a3cef0bac11ad07521be"
+    },
+    {
+      "path": "2026-09-26/secret-boundary-platform.txt",
+      "sha256": "8fc621172dfbd493bac40f6bf9ae5ab2568ed818b14ab6bcb52143c4c68fdc99"
+    },
+    {
+      "path": "2026-09-26/secret-boundary-results.tsv",
+      "sha256": "50cf534509809eb1af9746a4c1dee5be489c46e7a52bf9285e76d85b7c4086ac"
+    },
+    {
+      "path": "2026-09-26/superseded-failures.json",
+      "sha256": "f5c90adda49611c6d61b2df0acbc0d198b23b4cb3b5f4e77411947a49dbebe82"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9c1922add3b26f8f6355dbcbb08a23022ef33ba1566ef5dd9b54fb31742a5b2c"
+    },
+    {
+      "path": "review.md",
+      "sha256": "20fefb4bc1f866c5c18df16bf53fd72293f807d634c2bf136f8084360b0b2b56"
+    }
+  ]
+}

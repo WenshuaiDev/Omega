@@ -1,0 +1,105 @@
+{
+  "note": "Selected actual failed command records. Expected failures are PASS only in the corresponding harness result after recovery/isolation assertions. Build progress and private paths omitted; no raw credential data copied.",
+  "records": [
+    {
+      "case": "OMEGA-07-missing-credential",
+      "step": "1",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/dev.sh dev "
+      ],
+      "exit": 3,
+      "selected_diagnostics": [
+        "database volume exists but original runtime credential is missing; restore original credentials",
+        "omega: preflight failed (exit 3); data and diagnostics retained. Input: <fixture/source A>/.omega/dev"
+      ]
+    },
+    {
+      "case": "OMEGA-08-09-14-dependency",
+      "step": "1",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/dev.sh dev "
+      ],
+      "exit": 1,
+      "selected_diagnostics": [
+        "\u27a4 YN0028: \u2502 +  bin:",
+        "\u27a4 YN0028: \u2502 +    tsc: bin/tsc",
+        "\u27a4 YN0028: \u2502 +    tsserver: bin/tsserver",
+        "\u27a4 YN0028: \u2502 +  languageName: node",
+        "\u27a4 YN0028: \u2502 +  linkType: hard",
+        "\u27a4 YN0028: \u2502 +",
+        "\u27a4 YN0028: \u2502 The lockfile would have been modified by this install, which is explicitly forbidden.",
+        "\u27a4 YN0000: \u00b7 Failed with errors in 1s 396ms"
+      ]
+    },
+    {
+      "case": "OMEGA-08-09-migration",
+      "step": "1",
+      "command": [
+        "source=<fixture/source B> input=<fixture/source B>/.omega/dev",
+        "<fixture/source B>/scripts/dev.sh dev "
+      ],
+      "exit": 4,
+      "selected_diagnostics": [
+        "database operation failed (SQLSTATE 42601)",
+        "omega: migration failed (exit 4); data and diagnostics retained. Input: <fixture/source B>/.omega/dev",
+        "db migrate: database operation failed (SQLSTATE 42601) (operation=04eb1154c7285f6c2ea4831b version=dev instance=dev-5e27d0b341d2 started=2026-09-26T02:12:10.943768427Z finished=2026-09-26T02:12:10.957793218Z)"
+      ]
+    },
+    {
+      "case": "OMEGA-37-concurrency-cancel",
+      "step": "1",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/omega.sh --input <fixture/source A>/.omega/dev -- doctor "
+      ],
+      "exit": 6,
+      "selected_diagnostics": [
+        "operation lock held: <fixture/source A>/.omega/dev/.lock. If its process is no longer running, inspect owner and remove only this stale lock.",
+        "omega: preflight failed (exit 6); data and diagnostics retained. Input: <fixture/source A>/.omega/dev"
+      ]
+    },
+    {
+      "case": "OMEGA-12-reset-boundary",
+      "step": "1",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/dev.sh dev-reset --confirm wrong-instance "
+      ],
+      "exit": 3,
+      "selected_diagnostics": [
+        "confirmation did not match instance ID",
+        "omega: reset failed (exit 3); data and diagnostics retained. Input: <fixture/source A>/.omega/dev"
+      ]
+    },
+    {
+      "case": "OMEGA-12-reset-boundary",
+      "step": "2",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/dev.sh dev-reset --confirm dev-b90f738c1d1c "
+      ],
+      "exit": 3,
+      "selected_diagnostics": [
+        "development commands require an explicit dev instance; test/prod targets are refused",
+        "omega: preflight failed (exit 3); data and diagnostics retained. Input: <fixture/source A>/.omega/dev"
+      ]
+    },
+    {
+      "case": "OMEGA-12-reset-boundary",
+      "step": "4",
+      "command": [
+        "source=<fixture/source A> input=<fixture/source A>/.omega/dev",
+        "<fixture/source A>/scripts/dev.sh dev-reset --confirm dev-b90f738c1d1c "
+      ],
+      "exit": 3,
+      "selected_diagnostics": [
+        "database instance/environment does not match explicit configuration",
+        "omega: reset failed (exit 3); data and diagnostics retained. Input: <fixture/source A>/.omega/dev",
+        "doctor: database instance/environment does not match explicit configuration (operation=23502d8d39ce33b1235c4b08 version=dev instance=dev-b90f738c1d1c started=2026-09-26T02:12:47.059333054Z finished=2026-09-26T02:12:47.066540679Z)",
+        "{\"state\":\"partial\",\"schema\":1,\"instance_id\":\"dev-b90f738c1d1c\",\"environment\":\"prod\",\"compatible\":true,\"last_migration\":\"success\"}"
+      ]
+    }
+  ]
+}

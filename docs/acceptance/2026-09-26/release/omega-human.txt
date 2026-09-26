@@ -1,0 +1,2 @@
+version: ok (operation=e01a478cfb771003ba0bf378 version=0.1.0-issue13-rc7 instance= started=2026-09-26T02:59:35.300302632Z finished=2026-09-26T02:59:35.300377549Z)
+{"schema_max":1,"schema_min":1}

@@ -1,0 +1,6 @@
+The passing fresh daemon/data volume were removed by accept-release.sh after exit0.
+The earlier superseded exact-mode assertion failure retained omega-offline-1790391044-63421 and omega-offline-1790391044-63421-data.
+Before deleting those two named resources, docker inspect verified matching omega.acceptance.run labels and candidate/old archive/operator bind mounts plus the exclusively owned Docker data volume.
+The two exact resources were removed after their diagnostic evidence had been copied.
+Final docker ps -a --filter label=omega.acceptance.run and docker volume ls --filter label=omega.acceptance.run both returned empty lists.
+Release archives, expanded bundles and captured evidence remain available; no unrelated resources were removed.

@@ -1,0 +1,5 @@
+/omega-offline-test-db-1 sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a running healthy
+/omega-offline-test-api-1 sha256:1e3f777963f7341f90b34402f9cca3e41afdb97566e57376253f20211d9933d0 running healthy
+/omega-offline-test-web-1 sha256:934a038208b8c62db3225f17854dad3fc5cc3c7fe081109c870a1694730cb349 running healthy
+/omega-offline-test-console-1 sha256:a83669263ac433ab648a4582de6586433ac721beaf921e9b6c9bd585da48904b running healthy
+/omega-offline-test-edge-1 sha256:a4bbac13dc2bcf9a5c5dbc7e45cc57b3453a4d5adf49035dce1c59689ef72b68 running healthy

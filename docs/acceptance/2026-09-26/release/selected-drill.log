@@ -1,0 +1,65 @@
+Selected actual lines in original order; build/container progress and certificate inputs omitted. Full log SHA256 recorded in provenance.
+Empty isolated target image/container/volume store confirmed
+curl: (7) Failed to connect to 1.1.1.1:443 after 4 ms: Could not connect to server
+Expected refusal exit=7
+curl: (6) Could not resolve host: registry-1.docker.io (Could not contact DNS servers)
+Expected refusal exit=6
+Error response from daemon: failed to resolve reference "docker.io/library/alpine:3.22.1": failed to do request: Head "https://registry-1.docker.io/v2/library/alpine/manifests/3.22.1": dial tcp: lookup registry-1.docker.io on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable
+Expected refusal exit=1
+Imported verified release 0.1.0-issue13-rc7
+Manifest SHA256: 341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e
+Archive SHA256: 5723efe8e9ad447c681111ab7793940154e4e24ad1ff9c3777d5b45f0cd06b17
+Imported verified release 0.1.0-issue13-rc4
+Manifest SHA256: 7d9d343a238bfc3890af73c76599135aa8c872a4f44e3a8a2ba5c54b4b60edb9
+Archive SHA256: ec884311f54d02418d5892854d25a940e7805c8270213ef1442b68c12a3f3c41
+Ordinary Docker-enabled UID1000 imported the bundle and completed cold test deployment
+Same-image promotion, repeat and status passed
+Seven formal omega stdout files are standalone successful JSON results
+omega release: explicit environment differs from instance
+Expected refusal exit=2
+Packaged same-version omega diagnostics, runtime health, safe maintenance writes and input/CLI refusals passed
+direct TCP denied OSError errno 101
+hostname transport denied gaierror errno -3
+Application namespace direct-IP and hostname/TLS egress refused; internal API succeeds
+omega release: archive differs from independently trusted SHA256; nothing imported
+Expected refusal exit=2
+omega release: file integrity failed: OPERATIONS.md
+Expected refusal exit=2
+omega release: manifest differs from trusted SHA256
+Expected refusal exit=2
+omega release: missing local image: tools; import verified archive first (no pull attempted)
+Expected refusal exit=2
+omega release: image content/platform mismatch: tools
+Expected refusal exit=2
+omega release: database volume ownership mismatch or lookup failed
+Release failed at preflight (exit 2). Maintenance=false; data retained. Evidence: /instances/wrong/.release/runs/20260926T030148Z-59069
+Expected refusal exit=2
+Trusted archive/manifest/file, missing image, wrong image ID and input ownership refusals passed before maintenance
+Release failed at start (exit 1). Maintenance=true; data retained. Evidence: /instances/test/.release/runs/20260926T030159Z-60599
+Expected refusal exit=1
+Real readiness failure retains maintenance/data; explicit repaired retry passed
+Release failed at preflight (exit 6). Maintenance=false; data retained. Evidence:
+Actual held operation rejects concurrent same-instance command, cancels130 without orphan, and independent test/prod retries run concurrently
+Release failed at inputs (exit 2). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030442Z-83656
+Expected refusal exit=2
+Release failed at inputs (exit 2). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030453Z-85310
+Expected refusal exit=2
+Release failed at inputs (exit 2). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030505Z-86924
+Expected refusal exit=2
+Release failed at inputs (exit 2). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030516Z-88636
+Expected refusal exit=2
+TLS hostname, key mismatch, expired and future certificates refused before maintenance
+Release failed at disk-preflight (exit 2). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030528Z-90308
+Expected refusal exit=2
+Atomic TLS input renewal: failed preflight keeps old pair, explicit recreation serves new pair
+Release failed at database-preflight (exit 3). Maintenance=false; data retained. Evidence: /instances/test/.release/runs/20260926T030838Z-109510
+Expected refusal exit=3
+Old actual binary compatible rollback passed; unknown newer physical schema refused before switching
+database operation failed (SQLSTATE P0001)
+Release failed at migration (exit 4). Maintenance=true; data retained. Evidence: /instances/migration/.release/runs/20260926T031009Z-119538
+Expected refusal exit=4
+Actual migration SQL failure rolled back transaction, persisted failed attempt and maintenance; repaired retry passed
+Secret scan passed: 12 private fixture markers, 494 file/config/history/raw/decompressed layer checks; marker values never printed
+curl: (7) Failed to connect to 1.1.1.1:443 after 4 ms: Could not connect to server
+Expected refusal exit=7
+OFFLINE ACCEPTANCE PASSED (native platform status recorded separately)

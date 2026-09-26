@@ -1,0 +1,7 @@
+source_commit=578cae2a4b62662d834225f7ee9ccdf2982b37f3
+requested_suite=release
+started_at=2026-09-26T02:53:41Z
+Darwin arm64
+server=29.8.0/linux/arm64
+archive_sha256=5723efe8e9ad447c681111ab7793940154e4e24ad1ff9c3777d5b45f0cd06b17
+manifest_sha256=341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e

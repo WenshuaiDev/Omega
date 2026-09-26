@@ -1,0 +1,5 @@
+omega-api:quality	10001:10001
+omega-console:quality	nginx
+omega-web:quality	nginx
+omega-edge:quality	101:101
+omega-tools:quality	<empty; Docker default root>
