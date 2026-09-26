@@ -94,23 +94,31 @@ RUN_DIR="$INPUT/.release/runs/$(date -u +%Y%m%dT%H%M%SZ)-$$"; mkdir "$RUN_DIR"
 printf 'version=%s\ncommit=%s\nmanifest_sha256=%s\nenvironment=%s\ninstance=%s\ncommand=%s\n' "$VERSION" "$RELEASE_COMMIT" "$TRUSTED" "$ENVIRONMENT" "$INSTANCE_ID" "$COMMAND" > "$RUN_DIR/target.txt"
 [ ! -f "$INPUT/.release/current" ] || cp "$INPUT/.release/current" "$RUN_DIR/previous-success.txt"
 compose ps --all --format json > "$RUN_DIR/containers-before.json"
-case "$COMMAND" in
-  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; docker system df; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
-  logs) compose logs --tail 200 --no-color; exit 0 ;;
-  down) phase stop; run 120 "${COMPOSE[@]}" down --timeout 25; echo 'Stopped; persistent volumes retained'; exit 0 ;;
-esac
-phase inputs
-tools
 for label in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=$ENVIRONMENT" "org.omega.input=$INPUT"; do
   if docker volume inspect "${PROJECT}_db_data" >/dev/null 2>&1; then
     [ "$(docker volume inspect --format "{{index .Labels \"${label%%=*}\"}}" "${PROJECT}_db_data")" = "${label#*=}" ] || fail 'database volume ownership mismatch'
   fi
 done
+case "$COMMAND" in
+  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; docker system df; run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" openssl x509 -in /inputs/tls/cert.pem -noout -enddate; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
+  logs) compose logs --tail 200 --no-color; exit 0 ;;
+  down) phase stop; run 120 "${COMPOSE[@]}" down --timeout 25; echo 'Stopped; persistent volumes retained'; exit 0 ;;
+esac
+phase inputs
+tools
+phase disk-preflight
+# Reserve room for database/log growth and an additional image-size working set.
+input_free=$(df -Pk "$INPUT" | awk 'END {print $4}')
+docker_root=$(docker info --format '{{.DockerRootDir}}')
+docker_free=$(df -Pk "$docker_root" | awk 'END {print $4}')
+archive_kb=$(du -k "$BUNDLE/images.tar" | awk '{print $1}')
+[[ "$input_free" =~ ^[0-9]+$ ]] && [ "$input_free" -ge 102400 ] || fail 'input filesystem needs at least100MiB free'
+[[ "$docker_free" =~ ^[0-9]+$ ]] && [ "$docker_free" -ge "$((archive_kb + 524288))" ] || fail 'Docker filesystem needs archive-size plus512MiB free before maintenance'
 TASK="$PROJECT-release-tools-$$"
 run 120 docker run --rm --pull never --name "$TASK" --network none --mount "type=bind,src=$INPUT,dst=/inputs" "$TOOLS_IMAGE" python /tools/inputs.py render /inputs /inputs/edge "$ENVIRONMENT"
 TASK=''
 run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" python /tools/release.py input-version /inputs "$VERSION"
-compose config --format json > "$RUN_DIR/compose.json"
+compose --profile '*' config --format json > "$RUN_DIR/compose.json"
 run 30 docker run --rm --pull never --network none --mount "type=bind,src=$RUN_DIR,dst=/evidence,readonly" "$TOOLS_IMAGE" python /tools/release.py model /evidence/compose.json
 phase candidate-config
 oneoff config validate > "$RUN_DIR/config.json"
