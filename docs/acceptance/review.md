@@ -4,7 +4,7 @@
 
 代码复审未解决项为 **0**：Spec 轴最初 6 项（1 项 P1、5 项 P2）已修正；Standards 轴最初没有文档规则违反项，1 项 P3 维护性判断已修正。随后发现的卷查询失败被误当作不存在、质量入口残余无界清理也已修正并加入回归。修复提交为 `8dd1d6e`、`9b21b87` 和仅验收相关的 `bbd6a33`。
 
-以下分别保留两位审查者的独立报告；其中“运行中/待执行”描述的是审查当时状态，不能替代实际运行结果。最终 Q3 已由统一入口通过，记录见 [Q3](2026-09-26/quality3/check.txt)；最终离线结果另见主报告 R。证据文档增量仍须独立复核。
+以下分别保留两位审查者的独立报告；其中“运行中/待执行”描述的是审查当时状态，不能替代实际运行结果。最终 Q3 已由统一入口通过，记录见 [Q3](2026-09-26/quality3/check.txt)；最终离线结果另见主报告 R。证据文档增量已于 2026-09-26 在集成提交 `2b40a9e` 完成两轴独立复核，Spec 与 Standards 均为零未解决项；完整最终报告见文末。
 
 ## Spec 轴：最终独立报告
 
@@ -98,3 +98,39 @@ Final update: quality3 completed PASS/0 on
 `cleanup_complete=true`. All nine wrapper tests passed in45.366s inside the
 fixed Go image, and the final original-source/dependency guard passed. The
 worktree remained clean. This supersedes pending wording above.
+
+## 2026-09-26：最终证据 Spec 复审（原文）
+
+# Final Spec review — 05462c1…2b40a9e
+
+**No unresolved Spec findings.** Earlier full implementation review and follow-through covered all six original findings and the additional failed-volume-query/quality-cleanup defects. Those corrections remain present. This final pass reviewed the evidence-only delta4738175…2b40a9e, acceptance README/review reports, source bindings and compact runtime proof. No unrequested scope expansion was found.
+
+The final matrix contains all38 identifiers:36 pass only within their stated local/emulated scope, OMEGA28 is explicitly excluded, and OMEGA38/native Linux amd64 remains pending under the user's approved #20 exception. The documents do not claim full native support, actual production delivery, or a single comprehensive `all` run. No CI or backup/restore scope was introduced.
+
+Q3 and B3 bind to clean bbd6a33 and record successful unified quality/browser execution; R binds immutable rc7 to4f6f5b3 with dispatcher578cae2. The rc7 archive was not rebuilt after the acceptance-only permission assertion correction. The seven formal CLI JSON results and both stopped-API maintenance results are successful, match rc7/source4f6f5b3, and the invalid command preserves exit2. Actual old-binary rollback snapshots match byte-for-byte. All93 committed artifact hashes match the provenance index; the manifest hash matches the independently recorded expected value.
+
+S is correctly bound to a86171c: its direct parent is8cc0d06, and its Git tree already contains all five private-source masks plus the edge404 guard. Q's dirty source and A's subsequently committed test bytes are explicitly distinguished from clean snapshots. Earlier failed harness/quality batches remain failures, with later passing executions recorded separately.
+
+The first-deployment migration failure claims only persisted failure, retained maintenance marker and no incompatible app startup; it explicitly makes no external503 claim. The existing-instance readiness failure separately supplies that503 evidence. Controlled shell fault substitutes are identified and not represented as actual daemon/disk outages. The final evidence review closes the prior documentation-delta pending item; native #20 remains the sole approved platform acceptance gap.
+
+## 2026-09-26：最终证据 Standards 复审（原文）
+
+# Standards review — completed implementation and evidence
+
+Reviewed `05462c1...2b40a9e` in `/tmp/omega13-integration`. Earlier code reviews covered the full baseline, detailed browser/review-fix changes through `c92e1da`, and corrective deltas through `578cae2`; this final pass covers all remaining release/acceptance documentation. Authorities: AGENTS, agent conventions, CONTEXT, accepted ADRs 0001–0003, README and extension contracts. No repository or runtime changes were made during review; tooling-enforced formatting/lint is excluded.
+
+## Documented standards
+
+**No actionable hard-standard violation remains.**
+
+The implementation retains one context and the agreed engineering-foundation, reference-application and application-maintenance terminology. It preserves ADR-0001 offline deployment, ADR-0002 maintenance/data retention without backup/restore or database downgrade, and ADR-0003 same-content application-set release. Browser/daemon harnesses remain acceptance tooling; no CI, speculative shared Go module or business model was introduced.
+
+Final `docs/acceptance/README.md`, `review.md`, release evidence and `docs/implementation/release.md` accurately distinguish local execution, Linux amd64 emulation, pending native acceptance and real production delivery. The 38-row matrix contains 36 scope-qualified local/emulated passes, OMEGA-28 explicitly excluded, and OMEGA-38 pending under #20. Earlier failures and historical pending review wording are contextualized instead of relabeled as success.
+
+rc7 remains bound to source `4f6f5b3`, its runner to `578cae2`; Q3/B3 identify `bbd6a33`. The documentation does not claim one final-HEAD or all-suite run. Sampled actual results match these boundaries. Independently verified all 93 committed evidence hashes and 225 original source hashes, JSON parsing, the release manifest hash, and byte-identical before/after rollback metadata. The formerly prospective release evidence link now resolves.
+
+## Smell baseline — judgment only
+
+**No remaining actionable finding.** The previous **Duplicated Code** finding (“the same logic shape appears in more than one hunk or file… extract the shared shape”) is resolved by `scripts/process.sh`, reused by dev, release, dispatcher, browser and quality wrappers. Thin aliases and component-specific orchestration do not warrant another abstraction.
+
+The final documentation adds provenance and measured acceptance records without duplicating configuration authority or broadening runtime scope. Standards review is complete with zero unresolved findings. Native Linux amd64 #20 remains deliberately unexecuted and cannot be inferred from this review.

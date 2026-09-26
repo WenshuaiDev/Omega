@@ -615,12 +615,16 @@
       "sha256": "565ff3935d161cb23ee08807c5b2eef8c07f0e132339470813d9123a45f04d18"
     },
     {
-      "source": "/tmp/omega13-context/spec-review-final.md",
-      "sha256": "ed9c2c5fd6bd9b79120e7f3d8253e1c7a38e86c905342f35d371ab855c30168f"
+      "source": "/tmp/omega13-context/review-history/spec-review-before-evidence.md",
+      "sha256": "ed9c2c5fd6bd9b79120e7f3d8253e1c7a38e86c905342f35d371ab855c30168f",
+      "original_source": "/tmp/omega13-context/spec-review-final.md",
+      "note": "Preserved prior report snapshot; original path was replaced by final evidence review."
     },
     {
-      "source": "/tmp/omega13-context/standards-review-final.md",
-      "sha256": "1336faa6edd851f12e1417c6ecc9959519425a3f98c8309fd921b1d5f1da0420"
+      "source": "/tmp/omega13-context/review-history/standards-review-before-evidence.md",
+      "sha256": "1336faa6edd851f12e1417c6ecc9959519425a3f98c8309fd921b1d5f1da0420",
+      "original_source": "/tmp/omega13-context/standards-review-final.md",
+      "note": "Preserved prior report snapshot; original path was replaced by final evidence review."
     },
     {
       "source": "/tmp/omega13-context/review-fix-results.md",
@@ -901,6 +905,14 @@
     {
       "source": "/tmp/omega13-context/rc7-unified-final/cleanup.txt",
       "sha256": "5539ba044e68ffd081559a76c2cad5f1413aa8323496cca5cec0f04f4c857374"
+    },
+    {
+      "source": "/tmp/omega13-context/spec-review-final.md",
+      "sha256": "370116bb1a22d2494b203c31403f87d9195696bab8432da3f0ab3c9719d4c693"
+    },
+    {
+      "source": "/tmp/omega13-context/standards-review-final.md",
+      "sha256": "a825e3710b780ea38f2ede903285eb3ed514d827d85895c13ea5a50b8399df63"
     }
   ],
   "committed_artifacts": [
@@ -1270,11 +1282,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "9c1922add3b26f8f6355dbcbb08a23022ef33ba1566ef5dd9b54fb31742a5b2c"
+      "sha256": "c3ede6bf7e14948ddea51704a7949e1c89a85a16c4cccf043f1e628b99d37b9f"
     },
     {
       "path": "review.md",
-      "sha256": "20fefb4bc1f866c5c18df16bf53fd72293f807d634c2bf136f8084360b0b2b56"
+      "sha256": "aa08b000ba852ef8273669a0b3468b9004eebd1c7e7a322de41bf1b999d7b3b3"
     }
   ]
 }
