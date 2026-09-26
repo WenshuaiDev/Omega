@@ -1,0 +1,11 @@
+.git
+.omega
+**/node_modules
+**/dist
+.yarn/cache
+.yarn/install-state.gz
+artifacts
+**/.DS_Store
+**/*.pem
+**/*.key
+**/secrets
