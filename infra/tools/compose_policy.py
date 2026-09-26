@@ -69,4 +69,3 @@ def validate_model(environment, data, input_root="/quality-input", materials_roo
         elif name == "edge":
             require(all(port.get("host_ip") == "127.0.0.1" for port in service.get("ports", [])), "dev ingress must bind loopback")
     print(f"{environment}: final Compose topology and deployment policies passed")
-
