@@ -55,7 +55,20 @@ def run(args):
                 ping = json.loads(body)
                 assert ping["version"] == version and ping["environment"] == environment
             if path in ("/web/", "/console/"):
-                assert re.search(rb'/assets/[^" ]+\.js', body), "missing built asset reference"
+                assets = re.findall(rb'(?:src|href)="([^" ]+\.(?:js|css))"', body)
+                assert assets and re.search(rb'/assets/[^" ]+\.js', body), "missing built asset reference"
+                assert response.getheader("Cache-Control") in ("no-cache", "no-store"), "HTML must refresh promptly"
+                for asset in assets:
+                    asset_path = asset.decode("utf-8")
+                    assert asset_path.startswith(path + "assets/"), "unexpected external or cross-app asset"
+                    asset_conn = http.client.HTTPSConnection(domain, 8443, context=context, timeout=8)
+                    asset_conn.sock = context.wrap_socket(socket.create_connection(("127.0.0.1", 8443), timeout=8), server_hostname=domain)
+                    asset_conn.request("GET", asset_path, headers={"Host": domain})
+                    asset_response = asset_conn.getresponse()
+                    assert asset_response.status == 200 and "immutable" in asset_response.getheader("Cache-Control", ""), "hashed asset unavailable or cache policy incorrect"
+                    assert "text/html" not in asset_response.getheader("Content-Type", ""), "asset incorrectly falls back to HTML"
+                    asset_response.read(1024 * 1024)
+                    asset_conn.close()
             conn.close()
         print("TLS, routes, runtime configuration and API version smoke passed under maintenance")
     else:
