@@ -157,8 +157,10 @@ func TestProcesses(t *testing.T) {
 	maintenance(0, "db", "migrate")
 	maintenance(0, "data", "ensure")
 	// Runtime identity is read-only; future table defaults allow application DML, never DDL.
-	runtimeDSN := strings.Replace(dsn, "postgres:admin-secret", "omega_runtime:test-secret", 1)
-	runtime, e := pgx.Connect(context.Background(), runtimeDSN)
+	runtimeConfig := admin.Config().Copy()
+	runtimeConfig.User = "omega_runtime"
+	runtimeConfig.Password = "test-secret"
+	runtime, e := pgx.ConnectConfig(context.Background(), runtimeConfig)
 	if e != nil {
 		t.Fatal(e)
 	}
