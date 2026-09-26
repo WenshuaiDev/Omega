@@ -24,7 +24,7 @@ while [ "$#" -gt 0 ]; do
 done
 [ "$PLATFORM" = linux/amd64 ] || { echo 'formal build platform must be linux/amd64' >&2; exit 2; }
 [[ "$TIMEOUT" =~ ^[1-9][0-9]*$ ]] || { echo 'timeout must be a positive integer' >&2; exit 2; }
-for utility in docker git tar tee mktemp; do command -v "$utility" >/dev/null || { echo "missing prerequisite: $utility" >&2; exit 2; }; done
+for utility in docker git mktemp cat; do command -v "$utility" >/dev/null || { echo "missing prerequisite: $utility" >&2; exit 2; }; done
 docker info >/dev/null 2>&1 || { echo 'Docker daemon unavailable' >&2; exit 2; }
 docker compose version >/dev/null
 RUN="omega-quality-$(date +%s)-$$"
@@ -36,11 +36,10 @@ TEMP=$(mktemp -d "${TMPDIR:-/tmp}/$RUN.XXXXXX")
 NETWORK="$RUN"; VOLUME="$RUN-source"; TASK="$RUN-task"; DB="$RUN-db"
 TOOLS="$RUN-tools:check"; GO="$RUN-go:check"; NODE="$RUN-node:check"
 IMAGES=("$TOOLS" "$GO" "$NODE")
-STAGE=preflight; CHILD=''; WATCHDOG=''
+STAGE=preflight; CHILD=''
 cleanup() {
   result=$?
   trap - EXIT INT TERM
-  [ -z "$WATCHDOG" ] || kill "$WATCHDOG" 2>/dev/null || true
   [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
   docker rm -f "$TASK" "$DB" >/dev/null 2>&1 || true
   docker network rm "$NETWORK" >/dev/null 2>&1 || true
@@ -56,13 +55,27 @@ trap 'exit 130' INT TERM
 run() {
   STAGE=$1; shift
   printf '\n== %s ==\n' "$STAGE"
-  "$@" > >(tee "$OUTPUT/$STAGE.log") 2>&1 & CHILD=$!
-  ( sleep "$TIMEOUT"; kill -TERM "$CHILD" 2>/dev/null ) & WATCHDOG=$!
-  result=0
+  "$@" > "$OUTPUT/$STAGE.log" 2>&1 & CHILD=$!
+  started=$SECONDS; result=0
+  while kill -0 "$CHILD" 2>/dev/null; do
+    if [ "$((SECONDS - started))" -ge "$TIMEOUT" ]; then
+      kill -TERM "$CHILD" 2>/dev/null || true
+      for ((grace=0; grace<5; grace++)); do
+        kill -0 "$CHILD" 2>/dev/null || break
+        sleep 1
+      done
+      kill -KILL "$CHILD" 2>/dev/null || true
+      wait "$CHILD" 2>/dev/null || true
+      CHILD=''
+      cat "$OUTPUT/$STAGE.log"
+      echo "stage exceeded ${TIMEOUT}s timeout" >&2
+      return 5
+    fi
+    sleep 1
+  done
   wait "$CHILD" || result=$?
-  kill "$WATCHDOG" 2>/dev/null || true
-  wait "$WATCHDOG" 2>/dev/null || true
-  CHILD=''; WATCHDOG=''
+  CHILD=''
+  cat "$OUTPUT/$STAGE.log"
   [ "$result" = 0 ] || return "$result"
 }
 {

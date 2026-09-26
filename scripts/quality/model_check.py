@@ -10,6 +10,9 @@ import subprocess
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "infra" / "tools"))
+from compose_policy import validate_model as model
+
 
 def require(ok, message):
     if not ok:
@@ -54,46 +57,6 @@ def snapshot(source, listing, destination, uid, gid):
             os.chown(Path(directory) / name, int(uid), int(gid))
     print("Current nonignored source copied; original tree is mounted read-only.")
 
-
-def model(environment, data):
-    services = data["services"]
-    require(set(("api", "db", "web", "console", "edge", "migrate")) <= set(services), "required services absent")
-    require(data["networks"]["data"].get("internal") is True, "database network must be internal")
-    require(set(services["db"]["networks"]) == {"data"}, "database may only join data network")
-    require(set(services["api"]["networks"]) == {"app", "data"}, "API must join app and data networks")
-    require(services["api"]["image"] == services["migrate"]["image"], "API and omega must share image")
-    for name, service in services.items():
-        require(not service.get("privileged"), f"{name}: privileged is forbidden")
-        require(service.get("network_mode") != "host", f"{name}: host network is forbidden")
-        if name != "edge":
-            require(not service.get("ports"), f"{name}: only edge publishes ports")
-        if name != "deps":
-            require(service.get("logging", {}).get("options", {}).get("max-size") and service.get("logging", {}).get("options", {}).get("max-file"), f"{name}: bounded logging required")
-        for mount in service.get("volumes", []):
-            require("docker.sock" not in str(mount), f"{name}: Docker socket mount forbidden")
-        if name not in {"db", "deps"}:
-            require(service.get("read_only") is True, f"{name}: read-only root required")
-            require("ALL" in service.get("cap_drop", []), f"{name}: capabilities must be dropped")
-            require(service.get("healthcheck") or name == "migrate", f"{name}: healthcheck required")
-        if environment != "dev":
-            require(service.get("platform") == "linux/amd64", f"{name}: formal platform must be linux/amd64")
-            require(service.get("pull_policy") == "never", f"{name}: formal image pulls forbidden")
-            require(not service.get("build") and not service.get("develop"), f"{name}: formal build/develop forbidden")
-            image = service.get("image", "")
-            require(":" in image and not image.endswith(":latest"), f"{name}: explicit version tag required")
-            command = str(service.get("command", "")) + str(service.get("entrypoint", ""))
-            require(not re.search(r"\b(vite|yarn|npm|go run|devwatch)\b", command), f"{name}: development command forbidden")
-            for key, value in service.get("environment", {}).items():
-                require(not re.search(r"(PASSWORD|SECRET|TOKEN)$", key, re.I), f"{name}: plaintext credential environment forbidden")
-            for mount in service.get("volumes", []):
-                if mount.get("type") != "bind":
-                    continue
-                source = mount["source"]
-                require(source.startswith("/quality-input/") or (name == "db" and source == "/quality-source/infra/db/10-omega.sh"), f"{name}: unexpected formal host/source mount {source}")
-                require(mount.get("read_only") is True, f"{name}: formal bind must be read-only")
-        elif name == "edge":
-            require(all(port.get("host_ip") == "127.0.0.1" for port in service.get("ports", [])), "dev ingress must bind loopback")
-    print(f"{environment}: final Compose topology and deployment policies passed")
 
 
 def db_image():
