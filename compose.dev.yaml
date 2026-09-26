@@ -1,0 +1,112 @@
+x-go-env: &go-env
+  GOPATH: /go
+  GOCACHE: /go/build-cache
+  HOME: /tmp
+x-node-env: &node-env
+  YARN_INSTALL_STATE_PATH: /workspace/.yarn/install-state.gz
+  YARN_CACHE_FOLDER: /workspace/.yarn/cache
+  YARN_GLOBAL_FOLDER: /workspace/.yarn/global
+  HOME: /tmp
+x-source: &source
+  type: bind
+  source: ${OMEGA_SOURCE_DIR}
+  target: /workspace
+x-go-mounts: &go-mounts
+  - *source
+  - go_cache:/go
+x-node-mounts: &node-mounts
+  - *source
+  - node_modules:/workspace/node_modules
+  - yarn_cache:/workspace/.yarn
+  - web_node_modules:/workspace/apps/web/node_modules
+  - console_node_modules:/workspace/apps/console/node_modules
+  - shared_node_modules:/workspace/packages/reference-app/node_modules
+services:
+  api:
+    build:
+      context: ${OMEGA_SOURCE_DIR}
+      dockerfile: services/api/Dockerfile
+      target: development
+    user: '${OMEGA_UID}:${OMEGA_GID}'
+    working_dir: /workspace
+    environment: *go-env
+    volumes: *go-mounts
+    command: [go, run, ./services/api/cmd/devwatch, --config, /etc/omega/app.yaml]
+    mem_limit: 2g
+    pids_limit: 512
+    healthcheck:
+      test: [CMD-SHELL, 'curl --fail --silent http://127.0.0.1:8080/health/ready >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+  migrate:
+    networks: [app, data]
+    user: '${OMEGA_UID}:${OMEGA_GID}'
+    working_dir: /workspace
+    environment: *go-env
+    entrypoint: [go, run, ./services/api/cmd/omega]
+    volumes: *go-mounts
+    mem_limit: 2g
+    pids_limit: 512
+  deps:
+    image: ${OMEGA_WEB_IMAGE}
+    profiles: [tools]
+    user: '${OMEGA_UID}:${OMEGA_GID}'
+    working_dir: /workspace
+    environment: *node-env
+    entrypoint: [yarn]
+    command: [install, --immutable]
+    volumes: *node-mounts
+    networks: [app]
+    restart: 'no'
+    init: true
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    mem_limit: 2g
+    pids_limit: 512
+  web:
+    build:
+      context: ${OMEGA_SOURCE_DIR}
+      dockerfile: apps/Dockerfile
+      target: development
+    user: '${OMEGA_UID}:${OMEGA_GID}'
+    working_dir: /workspace
+    environment: *node-env
+    command: [yarn, workspace, '@omega/web', dev]
+    volumes: *node-mounts
+    mem_limit: 1g
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/web/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  console:
+    build:
+      context: ${OMEGA_SOURCE_DIR}
+      dockerfile: apps/Dockerfile
+      target: development
+    user: '${OMEGA_UID}:${OMEGA_GID}'
+    working_dir: /workspace
+    environment: *node-env
+    command: [yarn, workspace, '@omega/console', dev]
+    volumes: *node-mounts
+    mem_limit: 1g
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173/console/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  edge:
+    build:
+      context: ${OMEGA_SOURCE_DIR}
+      dockerfile: infra/edge/Dockerfile
+    ports:
+      - '127.0.0.1:${OMEGA_HTTP_PORT}:8080'
+volumes:
+  go_cache: {}
+  node_modules: {}
+  yarn_cache: {}
+  web_node_modules: {}
+  console_node_modules: {}
+  shared_node_modules: {}
