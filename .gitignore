@@ -1,9 +1,0 @@
-node_modules/
-.yarn/
-dist/
-/build/
-*.tsbuildinfo
-.env
-.env.*
-!.env.example
-.DS_Store
