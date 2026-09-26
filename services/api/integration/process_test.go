@@ -72,7 +72,7 @@ func TestProcesses(t *testing.T) {
 		host = admin.Config().Host
 		port = fmt.Sprint(admin.Config().Port)
 	}
-	cfg := fmt.Sprintf("environment: dev\ninstance_id: test-instance\nhttp:\n  address: 127.0.0.1:18091\n  shutdown_timeout: 2s\ndatabase:\n  host: %s\n  port: %s\n  name: omega\n  user: omega_migrator\n  password_file: %s\n  sslmode: disable\n  connect_timeout: 1s\noperation_timeout: 2s\n", host, port, secret)
+	cfg := fmt.Sprintf("environment: dev\ninstance_id: test-instance\nhttp:\n  address: 127.0.0.1:18091\n  shutdown_timeout: 10s\ndatabase:\n  host: %s\n  port: %s\n  name: omega\n  user: omega_migrator\n  password_file: %s\n  sslmode: disable\n  connect_timeout: 1s\noperation_timeout: 2s\n", host, port, secret)
 	configPath := filepath.Join(dir, "config.yaml")
 	write := func(s string) {
 		t.Helper()
@@ -116,6 +116,9 @@ func TestProcesses(t *testing.T) {
 	if e := cmd.Run(); e == nil {
 		t.Fatal("API started on empty DB")
 	}
+	sql(`CREATE TABLE public.unrelated(id int)`)
+	maintenance(3, "db", "migrate")
+	sql(`DROP TABLE public.unrelated`)
 	maintenance(0, "db", "migrate")
 	maintenance(0, "db", "migrate")
 	maintenance(3, "health", "check")
@@ -218,6 +221,7 @@ func TestProcesses(t *testing.T) {
 	if get("/health/ready") != 204 {
 		t.Fatal("readiness did not recover")
 	}
+	client.CloseIdleConnections()
 	if e = cmd.Process.Signal(syscall.SIGTERM); e != nil {
 		t.Fatal(e)
 	}

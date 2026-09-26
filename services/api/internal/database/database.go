@@ -105,6 +105,13 @@ func Inspect(ctx context.Context, db *pgx.Conn, c config.Config, requireIdentity
 		return s, err
 	}
 	if !exists {
+		var existingObjects int
+		if err := db.QueryRow(ctx, `SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname<>'information_schema' AND c.relkind IN ('r','p','S','v','m','f')`).Scan(&existingObjects); err != nil {
+			return s, err
+		}
+		if existingObjects != 0 {
+			return s, Reject("unrecognized nonempty database; explicit initialization refused")
+		}
 		if requireIdentity {
 			return s, Reject("database is empty; run db migrate and data ensure explicitly")
 		}

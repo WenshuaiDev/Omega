@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"sync/atomic"
@@ -84,7 +83,7 @@ func Serve(ctx context.Context, c config.Config) error {
 	defer cancel()
 	if err = server.Shutdown(shutdown); err != nil {
 		_ = server.Close()
-		return fmt.Errorf("HTTP shutdown budget exhausted")
+		return &database.Failure{Code: 5, Message: "HTTP shutdown budget exhausted; remaining connections closed"}
 	}
 	return nil
 }
