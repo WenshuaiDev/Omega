@@ -41,7 +41,10 @@ cp /candidate.tar /releases/operator-candidate.tar
 chown omega-operator:omega-operator /releases/operator-candidate.tar
 su -s /bin/bash omega-operator -c "bash /tmp/operator/scripts/import-release.sh /releases/operator-candidate.tar '$ARCHIVE_SHA' /releases/candidate"
 stat -c '%a %u:%g %n' /releases/candidate/materials/infra/db/10-omega.sh > /evidence/operator-import-modes.txt
-[ "$(stat -c '%a' /releases/candidate/materials/infra/db/10-omega.sh)" = 755 ]
+# Git archive may preserve0755 or0775; prove the actual consumer boundary.
+# A root importer would conceal the original0700 ordinary-user regression.
+docker run --rm --pull never --user 70:70 --network none --entrypoint sh --mount type=bind,src=/releases/candidate/materials/infra/db/10-omega.sh,dst=/bootstrap,readonly "omega-release/db:$VERSION" -c 'test -r /bootstrap && test -x /bootstrap'
+printf 'consumer_uid=70 read=true execute=true\n' >> /evidence/operator-import-modes.txt
 [ "$(stat -c '%u' /releases/candidate/materials/infra/db/10-omega.sh)" = 1000 ]
 if [ -n "$OLD_SHA" ]; then bash /operator/scripts/import-release.sh /old.tar "$OLD_SHA" /releases/old; fi
 TOOLS=$(docker image inspect --platform linux/amd64 --format '{{.Id}}' "omega-release/tools:$VERSION")

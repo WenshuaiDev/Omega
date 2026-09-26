@@ -2,6 +2,7 @@
 # Disposable source snapshot and resources; no host language runtimes required.
 set -Eeuo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)
+source "$ROOT/scripts/process.sh"
 MODE=$1; shift
 OUTPUT=''
 PLATFORM=linux/amd64
@@ -25,8 +26,6 @@ done
 [ "$PLATFORM" = linux/amd64 ] || { echo 'formal build platform must be linux/amd64' >&2; exit 2; }
 [[ "$TIMEOUT" =~ ^[1-9][0-9]*$ ]] || { echo 'timeout must be a positive integer' >&2; exit 2; }
 for utility in docker git mktemp cat; do command -v "$utility" >/dev/null || { echo "missing prerequisite: $utility" >&2; exit 2; }; done
-docker info >/dev/null 2>&1 || { echo 'Docker daemon unavailable' >&2; exit 2; }
-docker compose version >/dev/null
 RUN="omega-quality-$(date +%s)-$$"
 if [ -z "$OUTPUT" ]; then OUTPUT="$ROOT/artifacts/$RUN"; fi
 mkdir -p -- "$OUTPUT"
@@ -38,15 +37,31 @@ TOOLS="$RUN-tools:check"; GO="$RUN-go:check"; NODE="$RUN-node:check"
 IMAGES=("$TOOLS" "$GO" "$NODE")
 STAGE=preflight; CHILD=''
 cleanup() {
-  result=$?
+  local result=$? cleanup_ok=true
   trap - EXIT INT TERM
-  [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
-  docker rm -f "$TASK" "$DB" >/dev/null 2>&1 || true
-  docker network rm "$NETWORK" >/dev/null 2>&1 || true
-  docker volume rm "$VOLUME" >/dev/null 2>&1 || true
-  docker image rm "${IMAGES[@]}" >/dev/null 2>&1 || true
-  rm -rf -- "$TEMP"
-  printf 'mode=%s\nstage=%s\nexit=%s\nfinished=%s\n' "$MODE" "$STAGE" "$result" "$(date -u +%FT%TZ)" > "$OUTPUT/result.txt"
+  set +e
+  # Persist the original failure even if this wrapper is killed during cleanup.
+  printf 'mode=%s\nstage=%s\nexit=%s\ncleanup_complete=false\n' "$MODE" "$STAGE" "$result" > "$OUTPUT/result.txt"
+  stop_child "$CHILD" 5; CHILD=''
+  if bounded 3 docker info >/dev/null 2>&1; then
+    # --rm tasks may already be absent; distinguish a successful empty listing
+    # from a failed daemon query before removing this run's exact names.
+    containers=$(bounded 3 docker ps -a --format '{{.ID}} {{.Names}}' --filter "name=$RUN") || cleanup_ok=false
+    while read -r cid name; do
+      case "$name" in "$TASK"|"$DB") bounded 3 docker rm -f "$cid" >/dev/null 2>&1 || cleanup_ok=false;; esac
+    done <<< "$containers"
+    bounded 3 docker network rm "$NETWORK" >/dev/null 2>&1 || cleanup_ok=false
+    bounded 3 docker volume rm "$VOLUME" >/dev/null 2>&1 || cleanup_ok=false
+    bounded 3 docker image rm "${IMAGES[@]}" >/dev/null 2>&1 || cleanup_ok=false
+  else
+    cleanup_ok=false
+  fi
+  if [ "$cleanup_ok" = true ]; then rm -rf -- "$TEMP";
+  else
+    printf 'Cleanup incomplete; inspect only run=%s task=%s db=%s network=%s volume=%s temporary=%s\n' "$RUN" "$TASK" "$DB" "$NETWORK" "$VOLUME" "$TEMP" > "$OUTPUT/cleanup.txt"
+    [ "$result" -ne 0 ] || result=5
+  fi
+  printf 'mode=%s\nstage=%s\nexit=%s\ncleanup_complete=%s\nfinished=%s\n' "$MODE" "$STAGE" "$result" "$cleanup_ok" "$(date -u +%FT%TZ)" > "$OUTPUT/result.txt"
   if [ "$result" = 0 ]; then echo "Omega $MODE passed. Evidence: $OUTPUT"; else echo "Omega $MODE failed at $STAGE (exit $result). Evidence: $OUTPUT" >&2; fi
   exit "$result"
 }
@@ -55,36 +70,21 @@ trap 'exit 130' INT TERM
 run() {
   STAGE=$1; shift
   printf '\n== %s ==\n' "$STAGE"
-  "$@" > "$OUTPUT/$STAGE.log" 2>&1 & CHILD=$!
-  started=$SECONDS; result=0
-  while kill -0 "$CHILD" 2>/dev/null; do
-    if [ "$((SECONDS - started))" -ge "$TIMEOUT" ]; then
-      kill -TERM "$CHILD" 2>/dev/null || true
-      for ((grace=0; grace<5; grace++)); do
-        kill -0 "$CHILD" 2>/dev/null || break
-        sleep 1
-      done
-      kill -KILL "$CHILD" 2>/dev/null || true
-      wait "$CHILD" 2>/dev/null || true
-      CHILD=''
-      cat "$OUTPUT/$STAGE.log"
-      echo "stage exceeded ${TIMEOUT}s timeout" >&2
-      return 5
-    fi
-    sleep 1
-  done
-  wait "$CHILD" || result=$?
-  CHILD=''
+  local result=0 BOUND_GRACE=5
+  bounded "$TIMEOUT" "$@" > "$OUTPUT/$STAGE.log" 2>&1 || result=$?
   cat "$OUTPUT/$STAGE.log"
   [ "$result" = 0 ] || return "$result"
 }
+STAGE=daemon-preflight
+bounded 20 docker info >/dev/null 2>&1 || { echo 'Docker daemon unavailable within20s' >&2; exit 5; }
+bounded 10 docker compose version >/dev/null || { echo 'Docker Compose unavailable within10s' >&2; exit 5; }
 {
   date -u +%FT%TZ
   git -C "$ROOT" rev-parse HEAD
   git -C "$ROOT" status --short
   uname -sm
-  docker version --format 'client={{.Client.Version}}/{{.Client.Os}}/{{.Client.Arch}} server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
-  docker compose version
+  bounded 15 docker version --format 'client={{.Client.Version}}/{{.Client.Os}}/{{.Client.Arch}} server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
+  bounded 10 docker compose version
   printf 'formal image target=%s; cross-build is not native-platform acceptance\n' "$PLATFORM"
 } > "$OUTPUT/environment.txt"
 # Track dirty/untracked current code too, but never Git-ignored credentials/caches.
@@ -95,7 +95,7 @@ done < "$TEMP/source-files"
 run tools-image docker build -f "$ROOT/infra/tools/Dockerfile" -t "$TOOLS" "$ROOT"
 run go-image docker build --target development -f "$ROOT/services/api/Dockerfile" -t "$GO" "$ROOT"
 run node-image docker build --target development -f "$ROOT/apps/Dockerfile" -t "$NODE" "$ROOT"
-docker volume create --label "org.omega.quality=$RUN" "$VOLUME" >/dev/null
+bounded 15 docker volume create --label "org.omega.quality=$RUN" "$VOLUME" >/dev/null
 COMMON=(--rm --name "$TASK" --user "$(id -u):$(id -g)" --mount "type=volume,src=$VOLUME,dst=/workspace" --workdir /workspace -e HOME=/tmp)
 run snapshot docker run --rm --name "$TASK" --network none \
   --mount "type=bind,src=$ROOT,dst=/source,readonly" \
@@ -103,15 +103,15 @@ run snapshot docker run --rm --name "$TASK" --network none \
   --mount "type=volume,src=$VOLUME,dst=/workspace" "$TOOLS" \
   python /source/scripts/quality/model_check.py snapshot /source /plan/source-files /workspace "$(id -u)" "$(id -g)"
 run tools-versions docker run "${COMMON[@]}" --network none "$TOOLS" python scripts/quality/model_check.py toolchain
-docker network create --label "org.omega.quality=$RUN" "$NETWORK" >/dev/null
+bounded 15 docker network create --label "org.omega.quality=$RUN" "$NETWORK" >/dev/null
 # Database tests use only this disposable instance, never the developer database.
-DB_IMAGE=$(docker run "${COMMON[@]}" --network none "$TOOLS" python scripts/quality/model_check.py db-image)
+DB_IMAGE=$(bounded 60 docker run "${COMMON[@]}" --network none "$TOOLS" python scripts/quality/model_check.py db-image)
 run postgres docker run -d --name "$DB" --network "$NETWORK" --network-alias db \
   --label "org.omega.quality=$RUN" --tmpfs /var/lib/postgresql/data \
   -e POSTGRES_DB=omega -e POSTGRES_PASSWORD=admin-secret "$DB_IMAGE"
 ready=false
 for ((attempt=0; attempt<60; attempt++)); do
-  if docker exec "$DB" pg_isready -U postgres >/dev/null 2>&1; then ready=true; break; fi
+  if bounded 3 docker exec "$DB" pg_isready -U postgres >/dev/null 2>&1; then ready=true; break; fi
   sleep 1
 done
 [ "$ready" = true ] || { echo 'isolated PostgreSQL startup timeout' >&2; exit 5; }
@@ -131,7 +131,7 @@ if [ "$MODE" = check ]; then
   for environment in dev test prod; do
     FILES=(-f "$ROOT/compose.yaml")
     if [ "$environment" = dev ]; then FILES+=(-f "$ROOT/compose.dev.yaml"); else FILES+=(-f "$ROOT/compose.release.yaml" -f "$ROOT/compose.$environment.yaml"); fi
-    "${CLEAN_ENV[@]}" OMEGA_INPUT_DIR=/quality-input OMEGA_SOURCE_DIR=/quality-source \
+    bounded 15 "${CLEAN_ENV[@]}" OMEGA_INPUT_DIR=/quality-input OMEGA_SOURCE_DIR=/quality-source \
       OMEGA_INSTANCE_ID=quality-instance "OMEGA_ENVIRONMENT=$environment" OMEGA_HTTP_PORT=18080 OMEGA_HTTPS_PORT=18443 \
       OMEGA_DOMAIN=omega.test OMEGA_UID=1000 OMEGA_GID=1000 OMEGA_VERSION=quality \
       OMEGA_API_IMAGE=omega-api:quality OMEGA_WEB_IMAGE=omega-web:quality OMEGA_CONSOLE_IMAGE=omega-console:quality \
@@ -141,7 +141,7 @@ if [ "$MODE" = check ]; then
       --mount "type=bind,src=$OUTPUT,dst=/reports,readonly" "$TOOLS" \
       python scripts/quality/model_check.py model "$environment" "/reports/compose-$environment.json"
   done
-  docker run "${COMMON[@]}" --network none "$TOOLS" python scripts/quality/model_check.py images > "$TEMP/images"
+  bounded 60 docker run "${COMMON[@]}" --network none "$TOOLS" python scripts/quality/model_check.py images > "$TEMP/images"
   COMMIT=$(git -C "$ROOT" rev-parse HEAD)
   while IFS='|' read -r key dockerfile target app; do
     [ -n "$key" ] || continue
@@ -150,14 +150,14 @@ if [ "$MODE" = check ]; then
     [ -z "$target" ] || BUILD+=(--target "$target")
     [ -z "$app" ] || BUILD+=(--build-arg "APP=$app")
     run "build-$key" docker build "${BUILD[@]}" "$ROOT"
-    [ "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$tag")" = quality ] || { echo 'wrong production version label' >&2; exit 3; }
-    [ "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$tag")" = "$COMMIT" ] || { echo 'wrong production commit label' >&2; exit 3; }
-    printf 'omega-%s:quality\t%s\n' "$key" "$(docker image inspect --format '{{.Config.User}}' "$tag")" >> "$OUTPUT/image-users.tsv"
-    docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}} {{json .Config.Labels}}' "$tag" >> "$OUTPUT/production-images.txt"
-    [ "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag")" = "$PLATFORM" ] || { echo 'wrong production image platform' >&2; exit 3; }
+    [ "$(bounded 15 docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$tag")" = quality ] || { echo 'wrong production version label' >&2; exit 3; }
+    [ "$(bounded 15 docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$tag")" = "$COMMIT" ] || { echo 'wrong production commit label' >&2; exit 3; }
+    printf 'omega-%s:quality\t%s\n' "$key" "$(bounded 15 docker image inspect --format '{{.Config.User}}' "$tag")" >> "$OUTPUT/image-users.tsv"
+    bounded 15 docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}} {{json .Config.Labels}}' "$tag" >> "$OUTPUT/production-images.txt"
+    [ "$(bounded 15 docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag")" = "$PLATFORM" ] || { echo 'wrong production image platform' >&2; exit 3; }
     if [ "$key" = api ]; then
       run binary-versions docker run --rm --name "$TASK" --network none --platform "$PLATFORM" --entrypoint omega "$tag" --json version
-      [ "$(docker run --rm --network none --platform "$PLATFORM" "$tag" --version)" = "quality $COMMIT" ] || { echo 'API binary version differs from release labels' >&2; exit 3; }
+      [ "$(bounded 60 docker run --rm --network none --platform "$PLATFORM" "$tag" --version)" = "quality $COMMIT" ] || { echo 'API binary version differs from release labels' >&2; exit 3; }
       run cli-version-check docker run "${COMMON[@]}" --network none --mount "type=bind,src=$OUTPUT,dst=/reports,readonly" "$TOOLS" python scripts/quality/model_check.py cli-version /reports/binary-versions.log "$COMMIT"
     fi
   done < "$TEMP/images"

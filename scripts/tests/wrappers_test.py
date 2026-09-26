@@ -136,6 +136,35 @@ esac
         self.assertEqual(same.returncode, 2)
         self.assertIn("distinct", same.stderr)
 
+    def test_quality_cancellation_with_unresponsive_daemon_retains_report(self):
+        self.executable("docker", '''
+case "$1" in
+  build) echo build >> "$MOCK_EVENTS"; exec sleep 1000;;
+  info) [ ! -f "$MOCK_EVENTS" ] || exec sleep 1000;;
+esac
+exit 0
+''')
+        repo = self.work / "repo"
+        (repo / "scripts/quality").mkdir(parents=True)
+        shutil.copy(ROOT / "scripts/process.sh", repo / "scripts/process.sh")
+        shutil.copy(ROOT / "scripts/quality/run.sh", repo / "scripts/quality/run.sh")
+        subprocess.run(["git", "init", "-q", str(repo)], check=True)
+        subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"], check=True)
+        evidence = self.work / "quality evidence"
+        proc = self.start(["bash", str(repo / "scripts/quality/run.sh"), "check", "--output", str(evidence)])
+        self.event("build")
+        proc.send_signal(signal.SIGTERM)
+        self.assertEqual(proc.wait(timeout=12), 130)
+        record = (evidence / "result.txt").read_text()
+        self.assertIn("exit=130", record)
+        self.assertIn("stage=tools-image", record)
+        self.assertIn("cleanup_complete=false", record)
+        cleanup = (evidence / "cleanup.txt").read_text()
+        self.assertIn("inspect only run=omega-quality-", cleanup)
+        retained = Path(cleanup.strip().split(" temporary=", 1)[1])
+        shutil.rmtree(retained)
+
     def test_dispatcher_cancellation_reaps_child_and_records_failed_suite(self):
         repo = self.work / "repo"
         (repo / "scripts").mkdir(parents=True)
