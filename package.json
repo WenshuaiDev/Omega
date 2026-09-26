@@ -1,0 +1,30 @@
+{
+  "name": "omega",
+  "private": true,
+  "packageManager": "yarn@4.18.1",
+  "engines": {
+    "node": "24.21.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "yarn workspaces foreach -A --exclude omega run typecheck",
+    "lint": "yarn workspaces foreach -A --exclude omega run lint",
+    "test": "yarn workspaces foreach -A --exclude omega run test",
+    "build": "yarn workspaces foreach -A --exclude omega run build",
+    "format:check": "prettier --check package.json .yarnrc.yml tsconfig.json eslint.config.js apps packages",
+    "format": "prettier --write package.json .yarnrc.yml tsconfig.json eslint.config.js apps packages"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.13.6",
+    "eslint": "10.11.0",
+    "globals": "17.12.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1"
+  },
+  "type": "module"
+}

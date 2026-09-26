@@ -9,3 +9,5 @@ artifacts
 **/*.pem
 **/*.key
 **/secrets
+
+.yarn/global
