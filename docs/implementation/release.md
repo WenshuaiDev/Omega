@@ -158,12 +158,15 @@ candidate archive/hash/version/manifest and a new evidence directory:
 
 ```bash
 docker build --platform linux/amd64 -t omega-acceptance-dind:29.8.0 -f infra/acceptance/Dockerfile .
-./scripts/accept-release.sh /output/omega.tar ARCHIVE_SHA VERSION MANIFEST_SHA \
-  omega-acceptance-dind:29.8.0 /output/new-evidence \
-  /output/previous.tar PREVIOUS_ARCHIVE_SHA PREVIOUS_VERSION PREVIOUS_MANIFEST_SHA
+./scripts/acceptance.sh release --output /output/new-evidence \
+  --archive /output/omega.tar --archive-sha256 ARCHIVE_SHA \
+  --version VERSION --manifest-sha256 MANIFEST_SHA \
+  --harness-image omega-acceptance-dind:29.8.0 \
+  --old-archive /output/previous.tar --old-archive-sha256 PREVIOUS_ARCHIVE_SHA \
+  --old-version PREVIOUS_VERSION --old-manifest-sha256 PREVIOUS_MANIFEST_SHA
 ```
 
-The final four arguments are required and must identify a distinct old version,
+The four old-candidate options are required and must identify a distinct old version,
 archive and manifest; otherwise the drill refuses before running any suite. The script owns a unique privileged **acceptance daemon**
 with networknone and its own Docker data volume, never the host socket. It mounts
 only archives and operator fixtures, records initially empty target state and
@@ -191,3 +194,20 @@ initially empty image store, prove daemon and application egress rejection, then
 deploy these actual images. The acceptance report must distinguish successful
 checks, refused corruption/missing image cases, fault injection and remaining
 unexecuted scenarios; package creation alone is not full acceptance.
+
+The [2026-09-26 release acceptance record](../acceptance/2026-09-26/release/README.md)
+captures the complete local offline rc7 pass through the unified entrypoint,
+including ordinary UID1000 import/cold deployment, actual UID70 bootstrap access,
+formal maintenance CLI commands, same-image promotion, failure retention, TLS
+rotation and an actual rc4 rollback without schema changes. Twelve private
+fixture markers were absent from 494 package/log/image checks. Candidate source
+was `4f6f5b3a2b1f847f4f9fa1ca1f5f94ff56c7930d`; the dispatcher ran at
+`578cae2a4b62662d834225f7ee9ccdf2982b37f3` after an acceptance-only correction
+replaced a numerical mode assertion with the real consumer permission check.
+The original rc7 archive was unchanged. Its archive SHA256 is
+`5723efe8e9ad447c681111ab7793940154e4e24ad1ff9c3777d5b45f0cd06b17` and
+manifest SHA256 is
+`341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e`.
+Both the successful drill's resources and the earlier failed assertion's owned
+daemon/volume were removed after evidence capture. This is Linux amd64 emulation
+on Docker Desktop/macOS arm64; native Linux amd64 acceptance remains pending #20.
