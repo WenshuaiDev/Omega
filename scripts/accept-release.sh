@@ -23,8 +23,13 @@ cleanup() {
   [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
   bounded 20 docker logs "$RUN" > "$EVIDENCE/daemon.log" 2>&1 || true
   bounded 20 docker cp "$RUN:/evidence/." "$EVIDENCE/" >/dev/null 2>&1 || true
-  bounded 30 docker rm -f "$RUN" >/dev/null 2>&1 || true
-  if [ "$code" = 0 ]; then bounded 20 docker volume rm "$DATA" >/dev/null; else echo "Failed drill data retained in owned volume $DATA; evidence $EVIDENCE" >&2; fi
+  if [ "$code" = 0 ]; then
+    bounded 30 docker rm -f "$RUN" >/dev/null 2>&1 || true
+    bounded 20 docker volume rm "$DATA" >/dev/null
+  else
+    bounded 30 docker stop --time 15 "$RUN" >/dev/null 2>&1 || true
+    echo "Failed drill inputs/container $RUN and owned data volume $DATA retained; evidence $EVIDENCE" >&2
+  fi
   exit "$code"
 }
 trap cleanup EXIT

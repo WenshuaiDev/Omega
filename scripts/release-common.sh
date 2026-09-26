@@ -11,7 +11,7 @@ bounded() {
       kill -TERM "$pid" 2>/dev/null || true; sleep 1; kill -KILL "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true; return 5
     fi
-    sleep 1
+    sleep 0.1
   done
   wait "$pid" || result=$?
   return "$result"

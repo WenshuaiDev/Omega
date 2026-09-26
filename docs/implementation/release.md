@@ -145,8 +145,9 @@ actual readiness/migration SQL failures, maintenance retention, compatible and
 incompatible rollback, cancellation/locking, separate concurrent instances and TLS
 renewal. Known private fixture markers are scanned across package files, logs,
 image config/history and raw/decompressed exported layers without printing them.
-Success removes only its owned daemon/volume; failure retains the owned data
-volume and records its exact name for inspection. The harness source and captured
+Success removes only its owned daemon/volume; failure stops and retains its
+container (including private fixture inputs) and owned data volume, recording
+their exact names for inspection. The harness source and captured
 command log make the drill repeatable. It does not claim native platform support
 when run through emulation, nor real production delivery.
 
