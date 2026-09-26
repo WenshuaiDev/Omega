@@ -4,9 +4,11 @@ set -Eeuo pipefail
 umask 077
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 OUTPUT="$ROOT/artifacts/dev-acceptance-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+MODE=full
 while [ "$#" -gt 0 ]; do
-  case "$1" in --output) OUTPUT=$2; shift 2;; *) echo 'usage: acceptance-dev.sh [--output DIRECTORY]' >&2; exit 2;; esac
+  case "$1" in --output) OUTPUT=$2; shift 2;; --secret-boundary-only) MODE=secret-boundary; shift;; *) echo 'usage: acceptance-dev.sh [--output DIRECTORY] [--secret-boundary-only]' >&2; exit 2;; esac
 done
+[ ! -d "$OUTPUT" ] || [ -z "$(ls -A "$OUTPUT")" ] || { echo 'evidence directory must be new or empty' >&2; exit 2; }
 mkdir -p "$OUTPUT"; OUTPUT=$(cd "$OUTPUT" && pwd -P)
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/omega dev acceptance.XXXXXX")
 WORK=$(cd "$WORK" && pwd -P)
@@ -40,7 +42,7 @@ printf 'case\tstatus\tstarted_at\tfinished_at\tevidence\tdetail\n' > "$OUTPUT/re
 } > "$OUTPUT/platform.txt"
 docker ps -a --format '{{.ID}} {{.Names}}' > "$OUTPUT/baseline-containers.txt"
 docker image ls --format '{{.Repository}}:{{.Tag}} {{.ID}}' > "$OUTPUT/baseline-images.txt"
-STEP=setup; STARTED=$(date -u +%FT%TZ); INDEX=0; ACTIVE=''; PLACEHOLDER=''
+STEP=setup; STARTED=$(date -u +%FT%TZ); INDEX=0; ACTIVE=''; PLACEHOLDER=''; SUCCESS=false
 select_instance() {
   NAME=$1; SRC="$WORK/source $NAME"; INPUT="$SRC/.omega/dev"; INSTANCE=''; PROJECT=''; PORT=''
   if [ -f "$INPUT/instance.env" ]; then
@@ -103,6 +105,7 @@ cleanup() {
     printf 'FAILED; resources preserved for diagnosis. Fixture root: %s\nEvidence: %s\n' "$WORK" "$OUTPUT" >&2
   else
     printf 'Evidence: %s\n' "$OUTPUT"
+    [ "$SUCCESS" != true ] || rm -rf -- "$WORK"
   fi
   exit "$code"
 }
@@ -124,6 +127,33 @@ assert test ! -s "$OMEGA_ACCEPTANCE_DENIED"
 inputs_hash > "$OUTPUT/initial-inputs.sha256"; identity > "$OUTPUT/initial-identity.txt"
 A_PROJECT=$PROJECT; A_PORT=$PORT
 record PASS 'Project-cold start from source path with spaces; all five services and public paths; host runtimes forbidden. Shared base cache retained.'
+
+begin OMEGA-16-24-secret-boundaries
+for service in api web console; do
+  run 0 docker exec "$(container "$service")" sh -c 'test ! -r /workspace/.omega/dev/secrets/admin && test ! -r /workspace/.omega/dev/secrets/migrator && test ! -r /workspace/.omega/dev/.runtime-secrets/db-admin && test ! -r /run/secrets/admin_password && test ! -r /run/secrets/migrator_password'
+done
+run 0 docker exec "$(container api)" sh -c 'test -r /run/secrets/db_password'
+for service in migrate deps; do
+  run 0 compose run --rm --no-deps --entrypoint sh "$service" -c 'test ! -r /workspace/.omega/dev/secrets/admin && test ! -r /workspace/.omega/dev/secrets/migrator'
+done
+for app in web console; do
+  for target in secrets/admin secrets/migrator .runtime-secrets/db-admin; do
+    run 0 curl --max-time 10 --silent --show-error --output "$WORK/withheld-body" --write-out '%{http_code}' "http://127.0.0.1:$PORT/$app/@fs/workspace/.omega/dev/$target"
+    status=$(cat "$OUTPUT/$STEP/$INDEX.stdout")
+    case "$status" in 403|404) ;; *) fail "frontend private-file request returned $status instead of403/404";; esac
+    for role in admin migrator runtime; do
+      if grep -F -q -f "$INPUT/secrets/$role" "$WORK/withheld-body"; then fail 'frontend exposed private credential content'; fi
+    done
+  done
+done
+record PASS 'Default .omega credentials hidden from API/frontends/maintenance/dependency source mounts; only API runtime role mounted; both edge @fs paths403/404 and bodies contain no credentials.'
+if [ "$MODE" = secret-boundary ]; then
+  begin cleanup
+  run 0 "$SRC/scripts/dev.sh" dev-reset --confirm "$INSTANCE"
+  record PASS 'Targeted correction regression cleaned only its own default-input instance.'
+  SUCCESS=true
+  exit 0
+fi
 
 begin OMEGA-06-repeat
 run 0 make_cmd dev
@@ -319,4 +349,4 @@ assert test ! -s "$OMEGA_ACCEPTANCE_DENIED"
 record PASS 'All harness database/cache volumes reset through actual selected-instance entry points; no denied host runtime ran.'
 begin pending-cross-scope
 record NOT_EXECUTED 'OMEGA04 browser HMR, OMEGA13 all-workspace quality checks, full OMEGA16 artifact secret audit and native OMEGA38 belong to companion evidence; this report does not mark them passed.'
-rm -rf -- "$WORK"
+SUCCESS=true

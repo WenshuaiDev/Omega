@@ -144,6 +144,19 @@ func TestProcesses(t *testing.T) {
 	sql(`UPDATE omega.schema_migrations SET version=2`)
 	maintenance(3, "db", "status")
 	sql(`UPDATE omega.schema_migrations SET version=1`)
+	// Partial control metadata and installation-without-version must not be auto-repaired or rebound.
+	sql(`ALTER TABLE omega.migration_attempts RENAME TO hidden_attempts`)
+	maintenance(3, "db", "migrate")
+	maintenance(3, "data", "ensure")
+	sql(`ALTER TABLE omega.hidden_attempts RENAME TO migration_attempts`)
+	sql(`DELETE FROM omega.schema_migrations`)
+	maintenance(3, "db", "migrate")
+	maintenance(3, "data", "ensure")
+	sql(`INSERT INTO omega.schema_migrations(version,checksum) VALUES(1,'` + checksum + `')`)
+	var instanceAfterPartial string
+	if e := admin.QueryRow(context.Background(), `SELECT instance_id FROM omega.installation`).Scan(&instanceAfterPartial); e != nil || instanceAfterPartial != "test-instance" {
+		t.Fatalf("partial-state refusal changed identity: %q %v", instanceAfterPartial, e)
+	}
 	// Exercise failure journaling and transaction rollback, then retry the same migration.
 	sql(`DROP TABLE omega.installation; DELETE FROM omega.schema_migrations;
  CREATE FUNCTION public.fail_test_migration() RETURNS event_trigger LANGUAGE plpgsql AS $$ BEGIN IF current_user='omega_migrator' THEN RAISE EXCEPTION 'test migration rejected'; END IF; END $$;
@@ -170,9 +183,25 @@ func TestProcesses(t *testing.T) {
 			t.Fatalf("runtime privilege unexpectedly allowed: %s", q)
 		}
 	}
-	sql(`SET ROLE omega_migrator; CREATE TABLE omega.future_test(id int); RESET ROLE`)
-	if _, e = runtime.Exec(context.Background(), `INSERT INTO omega.future_test VALUES(1)`); e != nil {
-		t.Fatal(e)
+	sql(`SET ROLE omega_migrator; CREATE TABLE omega.future_test(id bigserial PRIMARY KEY, marker text NOT NULL DEFAULT 'initial'); RESET ROLE`)
+	var generatedID int64
+	if e = runtime.QueryRow(context.Background(), `INSERT INTO omega.future_test DEFAULT VALUES RETURNING id`).Scan(&generatedID); e != nil || generatedID != 1 {
+		t.Fatalf("future table/sequence default privileges: generated id=%d error=%v", generatedID, e)
+	}
+	var marker string
+	if e = runtime.QueryRow(context.Background(), `SELECT marker FROM omega.future_test WHERE id=$1`, generatedID).Scan(&marker); e != nil || marker != "initial" {
+		t.Fatalf("future table read: marker=%s error=%v", marker, e)
+	}
+	for _, q := range []string{`UPDATE omega.future_test SET marker='updated' WHERE id=1`, `DELETE FROM omega.future_test WHERE id=1`} {
+		result, err := runtime.Exec(context.Background(), q)
+		if err != nil || result.RowsAffected() != 1 {
+			t.Fatalf("future table DML: affected=%d error=%v", result.RowsAffected(), err)
+		}
+	}
+	for _, q := range []string{`ALTER TABLE omega.future_test ADD COLUMN forbidden int`, `DROP TABLE omega.future_test`, `ALTER SEQUENCE omega.future_test_id_seq RESTART`, `DROP SEQUENCE omega.future_test_id_seq CASCADE`, `DROP SCHEMA omega CASCADE`, `CREATE ROLE forbidden_runtime_role`} {
+		if _, e = runtime.Exec(context.Background(), q); e == nil {
+			t.Fatalf("runtime DDL unexpectedly allowed: %s", q)
+		}
 	}
 	sql(`DROP TABLE omega.future_test`)
 	runtimeCfg := strings.Replace(cfg, "omega_migrator", "omega_runtime", 1)
