@@ -43,6 +43,7 @@ cleanup() {
   trap - EXIT INT TERM
   [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
   [ -z "$TASK" ] || docker rm -f "$TASK" >/dev/null 2>&1 || true
+  if [ "$code" -ne 0 ] && [ "$MAINTENANCE" = true ]; then touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; fi
   if [ -n "$RUN_DIR" ]; then
     printf '%s\texit=%s\tphase=%s\n' "$(date -u +%FT%TZ)" "$code" "$STAGE" >> "$RUN_DIR/journal.tsv"
     compose ps --all --format json > "$RUN_DIR/containers.json" 2>/dev/null || true
@@ -91,8 +92,10 @@ phase() { STAGE=$1; printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$STAGE" >> "$RUN_DIR
 mkdir -p "$INPUT/.release/runs"
 RUN_DIR="$INPUT/.release/runs/$(date -u +%Y%m%dT%H%M%SZ)-$$"; mkdir "$RUN_DIR"
 printf 'version=%s\ncommit=%s\nmanifest_sha256=%s\nenvironment=%s\ninstance=%s\ncommand=%s\n' "$VERSION" "$RELEASE_COMMIT" "$TRUSTED" "$ENVIRONMENT" "$INSTANCE_ID" "$COMMAND" > "$RUN_DIR/target.txt"
+[ ! -f "$INPUT/.release/current" ] || cp "$INPUT/.release/current" "$RUN_DIR/previous-success.txt"
+compose ps --all --format json > "$RUN_DIR/containers-before.json"
 case "$COMMAND" in
-  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; docker system df; exit 0 ;;
+  status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; docker system df; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
   logs) compose logs --tail 200 --no-color; exit 0 ;;
   down) phase stop; run 120 "${COMPOSE[@]}" down --timeout 25; echo 'Stopped; persistent volumes retained'; exit 0 ;;
 esac
@@ -112,6 +115,14 @@ run 30 docker run --rm --pull never --network none --mount "type=bind,src=$RUN_D
 phase candidate-config
 oneoff config validate > "$RUN_DIR/config.json"
 if [ "$COMMAND" = tls-reload ]; then
+  # Renewal applies only to the actual running set, never silently promotes it.
+  for service in db api web console edge; do
+    cid=$(compose ps -q "$service"); [ -n "$cid" ] || fail "TLS reload requires running service: $service"
+    for i in "${!IMAGE_ROLES[@]}"; do
+      [ "${IMAGE_ROLES[$i]}" != "$service" ] || [ "$(docker inspect --format '{{.Image}}' "$cid")" = "${IMAGE_IDS[$i]}" ] || fail 'TLS reload requires the current actual image set'
+    done
+  done
+  touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; MAINTENANCE=true
   phase tls-reload
   # Bind-mounted certificate/key inodes require a controlled edge recreation.
   run 120 "${COMPOSE[@]}" up -d --no-build --pull never --no-deps --force-recreate --wait --wait-timeout 90 edge

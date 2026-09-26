@@ -10,6 +10,9 @@ prerequisites
 [ -z "$(git -C "$ROOT" status --porcelain)" ] || fail 'release build requires a clean committed checkout'
 [ ! -e "$OUTPUT" ] || fail 'output exists; builds never overwrite releases'
 COMMIT=$(git -C "$ROOT" rev-parse HEAD)
+for role in api web console edge tools db; do
+  if docker image inspect "omega-release/$role:$VERSION" >/dev/null 2>&1; then fail "release version already has local image $role; choose a new version (never rebuild an accepted version)"; fi
+done
 mkdir -p "$OUTPUT/materials/scripts" "$OUTPUT/materials/infra/db" "$OUTPUT/templates" "$OUTPUT/evidence"
 OUTPUT=$(cd "$OUTPUT" && pwd -P)
 case "$OUTPUT" in "$ROOT"/*) fail 'release output must be outside build context' ;; esac
