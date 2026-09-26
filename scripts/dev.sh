@@ -71,7 +71,8 @@ run() { bounded "$@"; }
 
 if [ ! -f "$INPUT/instance.env" ]; then
   [ "$COMMAND" = dev ] || { echo 'missing instance.env' >&2; exit 2; }
-  if [ -n "$(bounded 15 docker volume ls -q --filter "label=org.omega.input=$INPUT")" ]; then
+  existing_volumes=$(bounded 15 docker volume ls -q --filter "label=org.omega.input=$INPUT") || { echo 'cannot verify existing volume ownership; no inputs generated' >&2; exit 5; }
+  if [ -n "$existing_volumes" ]; then
     echo 'Persistent volume exists but instance.env is missing; restore the original inputs. No replacement identity will be generated.' >&2
     exit 3
   fi
@@ -101,8 +102,9 @@ mkdir -p "$LOCK_ROOT"; chmod 700 "$LOCK_ROOT"
 acquire "$LOCK_ROOT/$PROJECT"
 DB_VOLUME="${PROJECT}_db_data"
 HAS_DB=false
-if bounded 15 docker volume inspect "$DB_VOLUME" >/dev/null 2>&1; then
-  HAS_DB=true
+existing_volumes=$(bounded 15 docker volume ls -q --filter "name=$DB_VOLUME") || { echo 'cannot verify database volume presence; refusing input preparation' >&2; exit 5; }
+while IFS= read -r volume; do [ "$volume" != "$DB_VOLUME" ] || HAS_DB=true; done <<< "$existing_volumes"
+if [ "$HAS_DB" = true ]; then
   for pair in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=dev" "org.omega.input=$INPUT"; do
     label=${pair%%=*}; expected=${pair#*=}
     actual=$(bounded 15 docker volume inspect --format "{{index .Labels \"$label\"}}" "$DB_VOLUME")

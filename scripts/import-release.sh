@@ -19,8 +19,8 @@ parent=$(dirname -- "$DEST")
 while [ ! -e "$parent" ]; do parent=$(dirname -- "$parent"); done
 docker_root=$(bounded 15 docker info --format '{{.DockerRootDir}}')
 archive_kb=$((($(wc -c < "$ARCHIVE") + 1023) / 1024))
-read -r dest_device dest_free < <(df -Pk "$parent" | awk 'END {print $1, $4}')
-read -r docker_device docker_free < <(df -Pk "$docker_root" | awk 'END {print $1, $4}')
+read -r dest_device dest_free < <(df -Pk "$parent" | awk 'END {print $1, $4}') || fail 'cannot measure destination filesystem space'
+read -r docker_device docker_free < <(df -Pk "$docker_root" | awk 'END {print $1, $4}') || fail 'cannot measure local Docker filesystem space'
 [[ "$dest_free" =~ ^[0-9]+$ ]] && [[ "$docker_free" =~ ^[0-9]+$ ]] || fail 'cannot measure destination/Docker filesystem space on this host'
 dest_need=$((archive_kb + 524288)); docker_need=$((archive_kb * 2 + 524288))
 if [ "$dest_device" = "$docker_device" ]; then dest_need=$((archive_kb * 3 + 524288)); fi
