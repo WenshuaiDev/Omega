@@ -83,6 +83,9 @@ for command in version 'config validate' doctor 'health check' 'db status' 'db m
   read -r -a words <<< "$command"
   maintenance "${words[@]}" > "/evidence/omega-${command// /-}.json"
 done
+docker run --rm --pull never --network none --mount type=bind,src=/evidence,dst=/evidence,readonly "$TOOLS" python -c 'import glob,json; files=glob.glob("/evidence/omega-*.json"); assert len(files)==7; [(_ for _ in ()).throw(AssertionError(path)) for path in files if json.load(open(path))["exit_code"] != 0]; print("Seven formal omega stdout files are standalone successful JSON results")'
+/releases/candidate/materials/scripts/omega-release.sh --env test --input /instances/test --version "$VERSION" --manifest-sha256 "$MANIFEST_SHA" -- version > /evidence/omega-human.txt
+grep -q '^version: ok ' /evidence/omega-human.txt || fail 'formal omega changed human CLI output'
 result=0; maintenance invalid-command > /evidence/omega-invalid.json 2>/dev/null || result=$?
 [ "$result" = 2 ] || fail 'formal omega failed to preserve invalid argument exit2'
 expect_failure /releases/candidate/materials/scripts/omega-release.sh --env prod --input /instances/test --version "$VERSION" --manifest-sha256 "$MANIFEST_SHA" -- doctor

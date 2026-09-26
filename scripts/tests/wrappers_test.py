@@ -76,6 +76,20 @@ exit 0
         self.assertFalse((inputs / ".lock").exists())
         self.assertEqual(proc.wait(timeout=16), 130)
 
+    def test_dev_volume_query_failure_never_generates_identity_or_credentials(self):
+        self.executable("docker", 'case "$1 $2" in "volume ls") exit 1;; esac; exit 0\n')
+        inputs = self.work / "inputs"
+        result = subprocess.run(["bash", str(ROOT / "scripts/dev.sh"), "dev", "--input", str(inputs)], env=self.env, capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 5)
+        self.assertFalse((inputs / "instance.env").exists())
+        (inputs / "instance.env").write_text("ENVIRONMENT=dev\nINSTANCE_ID=dev-query-failure\nHTTP_PORT=24567\nHTTPS_PORT=24568\nDOMAIN=localhost\n")
+        original = (inputs / "instance.env").read_bytes()
+        result = subprocess.run(["bash", str(ROOT / "scripts/dev.sh"), "dev", "--input", str(inputs)], env=self.env, capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 5)
+        self.assertEqual((inputs / "instance.env").read_bytes(), original)
+        self.assertFalse((inputs / "secrets").exists())
+        self.assertFalse((inputs / ".lock").exists())
+
     def test_dev_preflight_daemon_timeout(self):
         self.executable("docker", "exec sleep 1000\n")
         started = time.monotonic()

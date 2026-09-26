@@ -90,18 +90,22 @@ VARS=("OMEGA_INPUT_DIR=$INPUT" "OMEGA_SOURCE_DIR=$MATERIALS" "OMEGA_INSTANCE_ID=
 for i in "${!IMAGE_ROLES[@]}"; do key=$(printf '%s' "${IMAGE_ROLES[$i]}" | tr '[:lower:]' '[:upper:]'); VARS+=("OMEGA_${key}_IMAGE=${IMAGE_IDS[$i]}"); done
 COMPOSE=("${CLEAN[@]}" "${VARS[@]}" docker compose --project-name "$PROJECT" --project-directory "$MATERIALS" --env-file /dev/null -f "$MATERIALS/compose.yaml" -f "$MATERIALS/compose.release.yaml" -f "$MATERIALS/compose.$ENVIRONMENT.yaml")
 compose() { bounded 15 "${COMPOSE[@]}" "$@"; }
-oneoff() { TASK="$PROJECT-release-task-$$"; run 360 "${COMPOSE[@]}" run --rm --pull never --no-deps --name "$TASK" migrate --config /etc/omega/app.yaml --json "$@"; TASK=''; }
+oneoff_cli() { TASK="$PROJECT-release-task-$$"; run 360 "${COMPOSE[@]}" run --rm --pull never --no-deps --name "$TASK" migrate --config /etc/omega/app.yaml "$@"; TASK=''; }
+oneoff() { oneoff_cli --json "$@"; }
 phase() { STAGE=$1; printf '%s\t%s\n' "$(date -u +%FT%TZ)" "$STAGE" >> "$RUN_DIR/journal.tsv"; }
 mkdir -p "$INPUT/.release/runs"
 RUN_DIR="$INPUT/.release/runs/$(date -u +%Y%m%dT%H%M%SZ)-$$"; mkdir "$RUN_DIR"
 printf 'version=%s\ncommit=%s\nmanifest_sha256=%s\nenvironment=%s\ninstance=%s\ncommand=%s\n' "$VERSION" "$RELEASE_COMMIT" "$TRUSTED" "$ENVIRONMENT" "$INSTANCE_ID" "$COMMAND" > "$RUN_DIR/target.txt"
 [ ! -f "$INPUT/.release/current" ] || cp "$INPUT/.release/current" "$RUN_DIR/previous-success.txt"
 compose ps --all --format json > "$RUN_DIR/containers-before.json"
-for label in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=$ENVIRONMENT" "org.omega.input=$INPUT"; do
-  if bounded 15 docker volume inspect "${PROJECT}_db_data" >/dev/null 2>&1; then
-    [ "$(bounded 15 docker volume inspect --format "{{index .Labels \"${label%%=*}\"}}" "${PROJECT}_db_data")" = "${label#*=}" ] || fail 'database volume ownership mismatch'
-  fi
-done
+has_db=false
+existing_volumes=$(bounded 15 docker volume ls -q --filter "name=${PROJECT}_db_data") || fail 'cannot verify database volume ownership while Docker is unavailable'
+while IFS= read -r volume; do [ "$volume" != "${PROJECT}_db_data" ] || has_db=true; done <<< "$existing_volumes"
+if [ "$has_db" = true ]; then
+  for label in "org.omega.instance=$INSTANCE_ID" "org.omega.environment=$ENVIRONMENT" "org.omega.input=$INPUT"; do
+    [ "$(bounded 15 docker volume inspect --format "{{index .Labels \"${label%%=*}\"}}" "${PROJECT}_db_data")" = "${label#*=}" ] || fail 'database volume ownership mismatch or lookup failed'
+  done
+fi
 case "$COMMAND" in
   status) compose ps --all; printf 'Maintenance: '; if [ -f "$INPUT/edge/maintenance" ]; then echo active; else echo inactive; fi; [ ! -f "$INPUT/.release/current" ] || cat "$INPUT/.release/current"; df -h "$INPUT"; bounded 15 docker system df; run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" openssl x509 -in /inputs/tls/cert.pem -noout -enddate; curl --noproxy '*' --cacert "$INPUT/tls/cert.pem" --resolve "$DOMAIN:$HTTPS_PORT:127.0.0.1" --max-time 10 --silent --show-error --fail "https://$DOMAIN:$HTTPS_PORT/api/v1/ping"; exit 0 ;;
   logs) compose logs --tail 200 --no-color; exit 0 ;;
@@ -156,12 +160,12 @@ if [ "$COMMAND" = omega ]; then
       was_maintenance=false; [ ! -f "$INPUT/edge/maintenance" ] || was_maintenance=true
       touch "$INPUT/edge/maintenance"; chmod 644 "$INPUT/edge/maintenance"; MAINTENANCE=true
       if [ "$was_running" = true ]; then run 60 "${COMPOSE[@]}" stop --timeout 25 api >&2; fi
-      oneoff "${OMEGA_ARGS[@]}"
+      oneoff_cli "${OMEGA_ARGS[@]}"
       if [ "$was_running" = true ]; then
         run 150 "${COMPOSE[@]}" up -d --no-build --pull never --no-deps --wait --wait-timeout 120 api >&2
         if [ "$was_maintenance" = false ]; then rm -f "$INPUT/edge/maintenance"; MAINTENANCE=false; fi
       fi;;
-    *) oneoff "${OMEGA_ARGS[@]}";;
+    *) oneoff_cli "${OMEGA_ARGS[@]}";;
   esac
   phase complete
   exit 0
