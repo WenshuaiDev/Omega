@@ -64,3 +64,8 @@ make check ARGS="--output '/tmp/omega check evidence' --timeout 1800"
 正式升级允许维护窗口。迁移或健康验证失败时保留维护状态、实际已完成步骤与数据；不能把多容器操作当作事务。回退必须先由旧版本核实配置、身份及真实 schema 兼容性，不执行数据库降级。具体发布材料和已执行证据以 `docs/implementation/release.md` 为准；该流程的代码实现和本机演练均不代表生产交付。
 
 新增服务、前端应用或组件前，请按 [扩展接入规则](docs/engineering/extensions.md) 接入所有权威工作区和检查，不建立重复工程清单。
+
+统一行为验收入口为 `./scripts/acceptance.sh quality|dev|browser|release|all --output NEW_DIRECTORY`。
+浏览器子套件在专属源码副本和固定容器浏览器中真实检查 HMR、深层刷新、错误公开配置与恢复；
+`release/all` 需要显式候选包、可信校验值和预构建离线验收镜像。全部源码需先提交，具体参数与
+证据边界见 [浏览器及统一验收说明](docs/implementation/browser-acceptance.md)。未执行套件不会记作通过。

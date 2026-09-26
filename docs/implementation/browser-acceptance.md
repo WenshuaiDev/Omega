@@ -61,3 +61,41 @@ Primary packaging references: [Playwright Docker documentation](https://playwrig
 [official npm package metadata](https://registry.npmjs.org/playwright-core/1.63.0).
 Actual local results are appended after execution; the pinned candidates above
 alone are not compatibility or acceptance proof.
+
+## Executed evidence — 2026-09-26
+
+Committed source `d8105e9ca7631f59ad599c746be04663ae941b40`, based on integrated
+`9c2df04` including source-bind Secret isolation corrections:
+
+- `./scripts/acceptance.sh browser --output /tmp/omega23-browser-first`: exit0,
+  dispatcher browser PASS. All13 actual cases passed:2 app health,1 shared
+  both-app no-reload HMR,2 deep-route reload,4 bad-config refusal and4 recovery.
+  Screenshot/trace/request files, exact commands, image ID, source commit and
+  restoration hashes/results are in `browser/`. Both fixture source and public
+  JSON were restored; owned containers, networks, volumes and temporary checkout
+  were removed. The web HMR screenshot was visually inspected.
+- Actual browser runtime: Playwright-core1.63.0, Chromium153.0.8010.12,
+  Node24.20.0 from the pinned official browser image, Linuxarm64. Dependency build
+  stage/app toolchain remains Node24.21.0/Yarn4.18.1. Host Darwinarm64 and Docker
+  Linuxarm64; this is not native Linuxamd64 evidence.
+- `./scripts/check.sh --output /tmp/omega23-final-quality`: exit0 after adding
+  the pinned dependency/root lock. All Go and Yarn workspaces, real PostgreSQL
+  process tests, three final Compose models, actual five Linuxamd64 production
+  builds, image/binary labels/users and unchanged source/lock checks passed.
+  The acceptance-only DinD/browser images are excluded from production discovery.
+- A separate detached fixture commit `a017d88` deliberately removed the App.tsx
+  HMR marker anchor. Running the same dispatcher against the real healthy dev
+  stack at `/tmp/omega23-browser-negative-evidence` exited1 at both-apps-hmr;
+  `results.tsv` records FAIL, screenshots/traces show the actually rendered pages,
+  and exact fixture restoration succeeded. This proves the browser suite does
+  not silently skip a missing behavior or return PASS when an assertion fails.
+- `dev` before #22 was integrated returned exit2 and NOT_EXECUTED at
+  `/tmp/omega23-unavailable-suite`; `all` without candidate arguments returned2
+  before execution. Neither was recorded as passed. These were dispatcher
+  contract checks, not attempted dev/offline acceptance runs.
+
+The final reporting adjustment initializes all NOT_EXECUTED suite states before
+Docker metadata preflight, so an unavailable daemon also retains a truthful
+partial report. Bash syntax validation passed. No application, dependency or
+browser assertion changed after the successful runs above. Full OMEGA01–38
+aggregation and release/native records remain separately owned by #18/#20.

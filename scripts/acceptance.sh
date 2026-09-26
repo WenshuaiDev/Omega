@@ -47,15 +47,15 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
+for item in "${SUITES[@]}"; do
+  printf '%s\tNOT_EXECUTED\t-\t%s/\n' "$item" "$item" > "$OUTPUT/state/$item.tsv"
+done
 {
   printf 'source_commit=%s\nrequested_suite=%s\nstarted_at=%s\n' "$(git -C "$ROOT" rev-parse HEAD)" "$SUITE" "$(date -u +%FT%TZ)"
   uname -sm
   docker version --format 'server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
   printf 'archive_sha256=%s\nmanifest_sha256=%s\n' "$ARCHIVE_SHA" "$MANIFEST_SHA"
 } > "$OUTPUT/platform.txt"
-for item in "${SUITES[@]}"; do
-  printf '%s\tNOT_EXECUTED\t-\t%s/\n' "$item" "$item" > "$OUTPUT/state/$item.tsv"
-done
 for item in "${SUITES[@]}"; do
   case "$item" in quality) entry=scripts/check.sh;; dev) entry=scripts/acceptance-dev.sh;; browser) entry=scripts/acceptance/browser.sh;; release) entry=scripts/accept-release.sh;; esac
   [ -x "$ROOT/$entry" ] || { echo "requested suite is unavailable: $entry" >&2; exit 2; }
