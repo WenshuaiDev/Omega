@@ -165,7 +165,19 @@ def render(root, output, environment, uid, gid):
         if target.exists() and not same_content and name != "tls-key.pem":
             raise ValueError("credential differs from prepared instance; explicit credential rotation is required")
         if not same_content:
-            shutil.copyfile(source, target)
+            if name == "tls-key.pem" and target.exists():
+                # Keep the old edge's bind-mounted key paired with its old
+                # certificate until the explicit controlled recreation.
+                replacement = staged / ".tls-key.pending"
+                if replacement.exists() or replacement.is_symlink():
+                    raise ValueError("pending TLS staging file requires operator inspection")
+                with replacement.open("xb") as stream:
+                    os.chmod(replacement, 0o400)
+                    stream.write(source.read_bytes())
+                os.chown(replacement, target_uid, target_gid)
+                replacement.replace(target)
+            else:
+                shutil.copyfile(source, target)
         os.chmod(target, 0o400)
         os.chown(target, target_uid, target_gid)
     template = Path("/tools/nginx.conf.template").read_text()
