@@ -27,6 +27,8 @@ http {
         server_name @@DOMAIN@@;
         @@TLS@@
         if (-f $maintenance_file) { return 503; }
+        # Never forward managed private inputs to Vite's filesystem endpoint.
+        location ~ (^|/)\.omega(/|$) { return 404; }
         location = / { return 302 /web/; }
         location = /web { return 308 /web/; }
         location = /console { return 308 /console/; }
