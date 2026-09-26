@@ -7,14 +7,16 @@ COMMAND=${1:-dev}
 if [ "$#" -gt 0 ]; then shift; fi
 INPUT="$ROOT/.omega/dev"
 CONFIRM=''
+OMEGA_ARGS=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --) shift; OMEGA_ARGS=("$@"); break ;;
     --input) [ "$#" -ge 2 ] || { echo '--input requires a directory' >&2; exit 2; }; INPUT=$2; shift 2 ;;
     --confirm) [ "$#" -ge 2 ] || { echo '--confirm requires the exact instance ID' >&2; exit 2; }; CONFIRM=$2; shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
-case "$COMMAND" in dev|down|status|logs|dev-reset) ;; *) echo 'expected dev, down, status, logs, or dev-reset' >&2; exit 2 ;; esac
+case "$COMMAND" in dev|down|status|logs|dev-reset|omega) ;; *) echo 'expected dev, down, status, logs, or dev-reset' >&2; exit 2 ;; esac
 for utility in docker curl git make od awk sed cksum; do
   command -v "$utility" >/dev/null || { echo "missing prerequisite: $utility" >&2; exit 2; }
 done
@@ -36,7 +38,8 @@ cleanup() {
   [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
   if [ -n "$TASK" ]; then docker rm -f "$TASK" >/dev/null 2>&1 || true; fi
   local lock
-  for lock in "${LOCKS[@]}"; do
+  for lock in "${LOCKS[@]-}"; do
+    [ -n "$lock" ] || continue
     if [ -f "$lock/owner" ] && [ "$(cat "$lock/owner")" = "$TOKEN" ]; then rm -f "$lock/owner"; rmdir "$lock" 2>/dev/null || true; fi
   done
   if [ "$result" -ne 0 ]; then echo "omega: $STAGE failed (exit $result); data and diagnostics retained. Input: $INPUT" >&2; fi
@@ -145,6 +148,22 @@ tools() {
   TASK=''
 }
 case "$COMMAND" in
+  omega)
+    STAGE=maintenance
+    [ "${#OMEGA_ARGS[@]}" -gt 0 ] || OMEGA_ARGS=(--help)
+    operation=''
+    for arg in "${OMEGA_ARGS[@]}"; do
+      case "$arg" in --config|--config=*) echo 'select config through --input, not --config' >&2; exit 2 ;; --json) ;; *) operation="${operation}${operation:+ }$arg" ;; esac
+    done
+    case "$operation" in
+      'health check')
+        run 300 "${COMPOSE[@]}" exec -T api sh -c 'go build -o /tmp/omega-health ./services/api/cmd/omega && exec /tmp/omega-health --config /etc/omega/app.yaml "$@"' omega "${OMEGA_ARGS[@]}" ;;
+      'db migrate'|'data ensure')
+        run 60 "${COMPOSE[@]}" stop --timeout 25 api
+        oneoff migrate --config /etc/omega/app.yaml "${OMEGA_ARGS[@]}"
+        run 240 "${COMPOSE[@]}" up -d --no-build --wait --wait-timeout 210 api ;;
+      *) oneoff migrate --config /etc/omega/app.yaml "${OMEGA_ARGS[@]}" ;;
+    esac ;;
   down)
     STAGE=stop; run 120 "${COMPOSE[@]}" down --timeout 25
     echo "Stopped $PROJECT; persistent volumes retained." ;;
@@ -198,7 +217,7 @@ case "$COMMAND" in
       docker volume create --label "com.docker.compose.project=$PROJECT" --label "com.docker.compose.volume=$volume" "${PROJECT}_$volume" >/dev/null
       CACHE_ARGS+=(--mount "type=volume,src=${PROJECT}_$volume,dst=/cache/$volume")
     done
-    run 120 docker run --rm --name "$TASK" --network none "${CACHE_ARGS[@]}" --entrypoint sh "$WEB_IMAGE" -c 'chown -R "$1:$2" /cache' sh "$HOST_UID" "$HOST_GID"
+    run 120 docker run --rm --name "$TASK" --user 0:0 --network none "${CACHE_ARGS[@]}" --entrypoint sh "$WEB_IMAGE" -c 'chown -R "$1:$2" /cache' sh "$HOST_UID" "$HOST_GID"
     TASK=''
     STAGE=immutable-dependencies
     oneoff deps
