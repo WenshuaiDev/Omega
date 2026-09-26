@@ -1,6 +1,8 @@
 x-go-env: &go-env
   GOPATH: /go
   GOCACHE: /go/build-cache
+  GOFLAGS: -mod=readonly
+  GOTOOLCHAIN: local
   HOME: /tmp
 x-node-env: &node-env
   YARN_INSTALL_STATE_PATH: /workspace/.yarn/install-state.gz
