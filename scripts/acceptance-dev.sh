@@ -283,7 +283,7 @@ run 0 curl --max-time 10 --fail --silent "http://127.0.0.1:$B_PORT/api/v1/ping"
 run 2 docker run --rm --network "${PROJECT}_data" --mount "type=bind,src=$WORK/source A/.omega/dev/secrets/runtime,dst=/password,readonly" --entrypoint sh postgres:17.10-alpine -c 'PGPASSWORD=$(cat /password) psql -h db -U omega_runtime -d omega -c "SELECT 1"'
 assert grep -q 'password authentication failed' "$OUTPUT/$STEP/3.stderr"
 run 0 docker run --rm --network "${PROJECT}_data" --mount "type=bind,src=$INPUT/secrets/runtime,dst=/password,readonly" --entrypoint sh postgres:17.10-alpine -c 'PGPASSWORD=$(cat /password) psql -h db -U omega_runtime -d omega -c "SELECT 1"'
-record PASS 'Different instances/projects/ports/volumes/credentials; A credential cannot authenticate to B while B credential succeeds; simultaneous public health.' 
+record PASS 'Different instances/projects/ports/volumes/credentials; A credential cannot authenticate to B while B credential succeeds; simultaneous public health.'
 
 begin OMEGA-37-concurrency-cancel
 select_instance A
