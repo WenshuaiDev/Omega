@@ -14,12 +14,19 @@ http {
     resolver 127.0.0.11 valid=5s ipv6=off;
     resolver_timeout 3s;
     map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+    # Only an operator sharing the edge network namespace can verify ordinary
+    # TLS routes while the public maintenance gate remains closed.
+    map $remote_addr $maintenance_file {
+        default /etc/omega/edge/maintenance;
+        127.0.0.1 /etc/omega/edge/no-maintenance-bypass-file;
+        ::1 /etc/omega/edge/no-maintenance-bypass-file;
+    }
     # REDIRECT_SERVER
     server {
         @@LISTEN@@
         server_name @@DOMAIN@@;
         @@TLS@@
-        if (-f /etc/omega/edge/maintenance) { return 503; }
+        if (-f $maintenance_file) { return 503; }
         location = / { return 302 /web/; }
         location = /web { return 308 /web/; }
         location = /console { return 308 /console/; }
