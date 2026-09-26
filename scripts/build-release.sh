@@ -56,5 +56,6 @@ while IFS= read -r file; do
 done < <(find "$OUTPUT" -type f | LC_ALL=C sort)
 verify_manifest "$OUTPUT" "$(sha256 "$OUTPUT/manifest.tsv")"
 verify_images
-tar -cf "$OUTPUT.tar" -C "$OUTPUT" .
+# macOS archive metadata must not create unlisted AppleDouble files on Linux.
+COPYFILE_DISABLE=1 tar -cf "$OUTPUT.tar" -C "$OUTPUT" .
 printf 'Release: %s\nCommit: %s\nArchive: %s.tar\nTrusted archive SHA256: %s\nTrusted manifest SHA256: %s\n' "$VERSION" "$COMMIT" "$OUTPUT" "$(sha256 "$OUTPUT.tar")" "$(sha256 "$OUTPUT/manifest.tsv")"
