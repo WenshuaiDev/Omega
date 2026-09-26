@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 umask 077
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
+source "$ROOT/scripts/process.sh"
 SUITE=${1:-help}; [ "$#" = 0 ] || shift
 OUTPUT="$ROOT/artifacts/acceptance-$(date +%s)-$$"
 ARCHIVE=''; ARCHIVE_SHA=''; VERSION=''; MANIFEST_SHA=''; HARNESS=''
@@ -10,7 +11,7 @@ OLD_ARCHIVE=''; OLD_SHA=''; OLD_VERSION=''; OLD_MANIFEST=''
 usage() {
   echo 'Usage: scripts/acceptance.sh quality|dev|browser|release|all [--output NEW_DIRECTORY]'
   echo 'release/all require --archive FILE --archive-sha256 HASH --version VERSION --manifest-sha256 HASH --harness-image IMAGE'
-  echo 'Optional rollback candidate: --old-archive FILE --old-archive-sha256 HASH --old-version VERSION --old-manifest-sha256 HASH'
+  echo 'Required compatible old candidate: --old-archive FILE --old-archive-sha256 HASH --old-version VERSION --old-manifest-sha256 HASH'
   echo 'quality delegates check.sh; dev delegates acceptance-dev.sh; browser owns a disposable dev stack; release delegates accept-release.sh.'
   echo 'All suites require committed clean source. Build the release candidate and offline harness separately before release/all.'
   echo 'Missing/unrun suites never pass. Complete OMEGA evidence and native platform acceptance are separate records.'
@@ -27,9 +28,8 @@ while [ "$#" -gt 0 ]; do
 done
 if [ "$SUITE" = release ] || [ "$SUITE" = all ]; then
   [ -f "$ARCHIVE" ] && [ -n "$ARCHIVE_SHA" ] && [ -n "$VERSION" ] && [ -n "$MANIFEST_SHA" ] && [ -n "$HARNESS" ] || { echo 'release suite requires explicit candidate/harness inputs' >&2; exit 2; }
-  if [ -n "$OLD_ARCHIVE$OLD_SHA$OLD_VERSION$OLD_MANIFEST" ]; then
-    [ -f "$OLD_ARCHIVE" ] && [ -n "$OLD_SHA" ] && [ -n "$OLD_VERSION" ] && [ -n "$OLD_MANIFEST" ] || { echo 'all four old-candidate arguments are required together' >&2; exit 2; }
-  fi
+  [ -f "$OLD_ARCHIVE" ] && [ -n "$OLD_SHA" ] && [ -n "$OLD_VERSION" ] && [ -n "$OLD_MANIFEST" ] || { echo 'release/all requires all four old-candidate arguments for actual rollback acceptance' >&2; exit 2; }
+  [ "$OLD_VERSION" != "$VERSION" ] && [ "$OLD_SHA" != "$ARCHIVE_SHA" ] && [ "$OLD_MANIFEST" != "$MANIFEST_SHA" ] || { echo 'rollback candidate must have a distinct version, archive and manifest' >&2; exit 2; }
 fi
 [ -z "$(git -C "$ROOT" status --porcelain)" ] || { echo 'acceptance requires committed clean source' >&2; exit 2; }
 [ ! -e "$OUTPUT" ] || { echo 'use a new evidence directory' >&2; exit 2; }
@@ -37,7 +37,8 @@ mkdir -p "$OUTPUT/state"; OUTPUT=$(cd "$OUTPUT" && pwd -P)
 ACTIVE=''; CHILD=''
 cleanup() {
   code=$?; trap - EXIT INT TERM
-  [ -z "$CHILD" ] || { kill -TERM "$CHILD" 2>/dev/null || true; wait "$CHILD" 2>/dev/null || true; }
+  set +e
+  stop_child "$CHILD" 55; CHILD=''
   if [ -n "$ACTIVE" ]; then printf '%s\tFAIL\t%s\t%s/\n' "$ACTIVE" "$code" "$ACTIVE" > "$OUTPUT/state/$ACTIVE.tsv"; fi
   printf 'suite\tstatus\texit\tevidence\n' > "$OUTPUT/results.tsv"
   for item in "${SUITES[@]}"; do cat "$OUTPUT/state/$item.tsv" >> "$OUTPUT/results.tsv"; done
@@ -53,7 +54,7 @@ done
 {
   printf 'source_commit=%s\nrequested_suite=%s\nstarted_at=%s\n' "$(git -C "$ROOT" rev-parse HEAD)" "$SUITE" "$(date -u +%FT%TZ)"
   uname -sm
-  docker version --format 'server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
+  bounded 15 docker version --format 'server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
   printf 'archive_sha256=%s\nmanifest_sha256=%s\n' "$ARCHIVE_SHA" "$MANIFEST_SHA"
 } > "$OUTPUT/platform.txt"
 for item in "${SUITES[@]}"; do

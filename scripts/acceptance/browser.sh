@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 umask 077
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)
+source "$ROOT/scripts/process.sh"
 OUTPUT="$ROOT/artifacts/browser-$(date +%s)-$$"
 while [ "$#" -gt 0 ]; do
   case "$1" in --output) [ "$#" -ge 2 ] || exit 2; OUTPUT=$2; shift 2;; *) echo 'usage: browser.sh [--output NEW_OR_EMPTY_DIRECTORY]' >&2; exit 2;; esac
@@ -21,8 +22,22 @@ STAGE=setup; CHILD=''; PROJECT=''
 cleanup() {
   local code=$?
   trap - EXIT INT TERM
-  [ -z "$CHILD" ] || kill -TERM "$CHILD" 2>/dev/null || true
-  docker rm -f "$TASK" >/dev/null 2>&1 || true
+  set +e
+  printf 'stage=%s\nexit=%s\nsource=%s\ncleanup_complete=false\nnative_platform=separate-pending-20\n' "$STAGE" "$code" "${COMMIT:-unknown}" > "$OUTPUT/result.txt"
+  # Let dev's trap stop its tracked Docker child and release locks before the
+  # resource sweep or checkout removal. Forced termination retains the fixture.
+  cleanup_ok=true
+  [ "${STOP_FORCED:-false}" = false ] || cleanup_ok=false
+  stop_child "$CHILD" 20; CHILD=''
+  [ "${STOP_FORCED:-false}" = false ] || cleanup_ok=false
+  if ! bounded 3 docker info >/dev/null 2>&1; then
+    cleanup_ok=false
+    [ "$code" -ne 0 ] || code=5
+  fi
+  if [ "$cleanup_ok" = true ]; then bounded 5 docker rm -f "$TASK" >/dev/null 2>&1 || true; fi
+  # Record cancellation/failure even if this wrapper is itself killed while
+  # attempting best-effort cleanup. The final record below refines this state.
+  printf 'stage=%s\nexit=%s\nsource=%s\ncleanup_complete=false\nnative_platform=separate-pending-20\n' "$STAGE" "$code" "${COMMIT:-unknown}" > "$OUTPUT/result.txt"
   # Shell restoration also handles hard termination of the browser process.
   for file in App.tsx web.json console.json; do
     [ -f "$WORK/$file.original" ] || continue
@@ -30,22 +45,35 @@ cleanup() {
     cp "$WORK/$file.original" "$target"
     cmp -s "$WORK/$file.original" "$target" || code=1
   done
-  if [ -f "$INPUT/instance.env" ]; then
+  cleanup_started=$SECONDS
+  cleanup_docker() {
+    [ "$((SECONDS-cleanup_started))" -lt 25 ] || return 5
+    bounded 3 docker "$@"
+  }
+  if [ "$cleanup_ok" = true ] && [ -f "$INPUT/instance.env" ]; then
     PROJECT="omega-$(sed -n 's/^INSTANCE_ID=//p' "$INPUT/instance.env")"
-    docker ps -a --filter "label=com.docker.compose.project=$PROJECT" --format '{{.ID}} {{.Names}} {{.Status}}' > "$OUTPUT/containers.txt"
+    cleanup_docker ps -a --filter "label=com.docker.compose.project=$PROJECT" --format '{{.ID}} {{.Names}} {{.Status}}' > "$OUTPUT/containers.txt" || cleanup_ok=false
     for service in api web console edge db; do
-      cid=$(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT" --filter "label=com.docker.compose.service=$service")
-      [ -z "$cid" ] || docker logs --tail 100 "$cid" > "$OUTPUT/$service.log" 2>&1 || true
+      cid=$(cleanup_docker ps -aq --filter "label=com.docker.compose.project=$PROJECT" --filter "label=com.docker.compose.service=$service") || { cleanup_ok=false; break; }
+      [ -z "$cid" ] || cleanup_docker logs --tail 100 "$cid" > "$OUTPUT/$service.log" 2>&1 || true
     done
-    # Only resources selected by this generated private instance's exact label.
-    while IFS= read -r cid; do [ -z "$cid" ] || docker rm -f "$cid" >/dev/null || code=1; done < <(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT")
-    while IFS= read -r volume; do [ -z "$volume" ] || docker volume rm "$volume" >/dev/null || code=1; done < <(docker volume ls -q --filter "label=com.docker.compose.project=$PROJECT")
-    while IFS= read -r network; do [ -z "$network" ] || docker network rm "$network" >/dev/null || code=1; done < <(docker network ls -q --filter "label=com.docker.compose.project=$PROJECT")
-    for image in api web console edge tools; do docker image rm "$PROJECT-$image:dev" >/dev/null 2>&1 || true; done
+    # Explicit query status prevents an unavailable daemon from looking like an
+    # empty resource set. Retain the checkout whenever cleanup is incomplete.
+    ids=$(cleanup_docker ps -aq --filter "label=com.docker.compose.project=$PROJECT") || cleanup_ok=false
+    for cid in $ids; do cleanup_docker rm -f "$cid" >/dev/null || cleanup_ok=false; done
+    ids=$(cleanup_docker volume ls -q --filter "label=com.docker.compose.project=$PROJECT") || cleanup_ok=false
+    for volume in $ids; do cleanup_docker volume rm "$volume" >/dev/null || cleanup_ok=false; done
+    ids=$(cleanup_docker network ls -q --filter "label=com.docker.compose.project=$PROJECT") || cleanup_ok=false
+    for network in $ids; do cleanup_docker network rm "$network" >/dev/null || cleanup_ok=false; done
+    for image in api web console edge tools; do cleanup_docker image rm "$PROJECT-$image:dev" >/dev/null 2>&1 || true; done
   fi
-  docker image rm "$IMAGE" >/dev/null 2>&1 || true
-  rm -rf -- "$WORK"
-  printf 'stage=%s\nexit=%s\nsource=%s\nnative_platform=separate-pending-20\n' "$STAGE" "$code" "$COMMIT" > "$OUTPUT/result.txt"
+  if [ "$cleanup_ok" = true ]; then cleanup_docker image rm "$IMAGE" >/dev/null 2>&1 || true
+    rm -rf -- "$WORK"
+  else
+    printf 'Cleanup incomplete; owned private fixture retained at %s\n' "$WORK" > "$OUTPUT/cleanup.txt"
+  fi
+  [ "$cleanup_ok" = true ] || { [ "$code" -ne 0 ] || code=5; }
+  printf 'stage=%s\nexit=%s\nsource=%s\ncleanup_complete=%s\nnative_platform=separate-pending-20\n' "$STAGE" "$code" "$COMMIT" "$cleanup_ok" > "$OUTPUT/result.txt"
   exit "$code"
 }
 trap cleanup EXIT
@@ -54,34 +82,25 @@ run() {
   STAGE=$1; limit=$2; shift 2
   printf '%q ' "$@" > "$OUTPUT/$STAGE.argv"; printf '\n' >> "$OUTPUT/$STAGE.argv"
   echo "browser acceptance: $STAGE (evidence $OUTPUT)"
-  "$@" > "$OUTPUT/$STAGE.log" 2>&1 & CHILD=$!
-  started=$SECONDS; code=0
-  while kill -0 "$CHILD" 2>/dev/null; do
-    if [ "$((SECONDS-started))" -ge "$limit" ]; then
-      kill -TERM "$CHILD" 2>/dev/null || true; sleep 1
-      kill -KILL "$CHILD" 2>/dev/null || true; wait "$CHILD" 2>/dev/null || true
-      CHILD=''; echo "$STAGE exceeded ${limit}s" >&2; return 5
-    fi
-    sleep 1
-  done
-  wait "$CHILD" || code=$?; CHILD=''
+  local code=0 BOUND_GRACE=20
+  bounded "$limit" "$@" > "$OUTPUT/$STAGE.log" 2>&1 || code=$?
   [ "$code" = 0 ] || { cat "$OUTPUT/$STAGE.log" >&2; return "$code"; }
 }
 COMMIT=$(git -C "$ROOT" rev-parse HEAD)
 {
   printf 'source_commit=%s\n' "$COMMIT"
   uname -sm
-  docker version --format 'client={{.Client.Version}}/{{.Client.Os}}/{{.Client.Arch}} server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
-  docker compose version
+  bounded 15 docker version --format 'client={{.Client.Version}}/{{.Client.Os}}/{{.Client.Arch}} server={{.Server.Version}}/{{.Server.Os}}/{{.Server.Arch}}'
+  bounded 10 docker compose version
   echo 'Browser runs through Nginx in its network namespace; host published ingress is checked separately.'
   echo 'This suite alone does not complete native Linux amd64 acceptance #20.'
 } > "$OUTPUT/platform.txt"
 run browser-image 1800 docker build -f "$SOURCE/scripts/acceptance/Dockerfile" -t "$IMAGE" "$SOURCE"
-docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}}' "$IMAGE" > "$OUTPUT/browser-image.txt"
+bounded 10 docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}}' "$IMAGE" > "$OUTPUT/browser-image.txt"
 run dev-start 2400 "$SOURCE/scripts/dev.sh" dev --input "$INPUT"
 PROJECT="omega-$(sed -n 's/^INSTANCE_ID=//p' "$INPUT/instance.env")"
 PORT=$(sed -n 's/^HTTP_PORT=//p' "$INPUT/instance.env")
-EDGE=$(docker ps -q --filter "label=com.docker.compose.project=$PROJECT" --filter label=com.docker.compose.service=edge)
+EDGE=$(bounded 10 docker ps -q --filter "label=com.docker.compose.project=$PROJECT" --filter label=com.docker.compose.service=edge)
 [ -n "$EDGE" ] || { echo 'owned edge container not found' >&2; exit 1; }
 run published-ingress 15 curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:$PORT/api/v1/ping"
 cp "$SOURCE/packages/reference-app/src/App.tsx" "$WORK/App.tsx.original"

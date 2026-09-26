@@ -99,3 +99,11 @@ Docker metadata preflight, so an unavailable daemon also retains a truthful
 partial report. Bash syntax validation passed. No application, dependency or
 browser assertion changed after the successful runs above. Full OMEGA01–38
 aggregation and release/native records remain separately owned by #18/#20.
+
+
+Review corrections: release/all now requires a distinct complete old candidate;
+a skipped rollback cannot be reported as a passing release suite. The dispatcher
+bounds child cancellation and writes failure/unexecuted suite records. Browser
+cleanup waits for the dev child's trap, bounds all Docker cleanup calls and its
+resource-sweep budget, and retains the private checkout if the daemon cannot
+confirm cleanup. A cancellation record remains available even during cleanup.

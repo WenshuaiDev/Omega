@@ -26,7 +26,7 @@ operator scripts and this guide; no repository checkout, dev images or credentia
 
 Record the emitted archive and manifest SHA256 values through a separately
 trusted channel. Transfer the archive and trusted bootstrap scripts
-`scripts/import-release.sh` plus `scripts/release-common.sh` (preserve their
+`scripts/import-release.sh`, `scripts/release-common.sh` and `scripts/process.sh` (preserve their
 relative locations). A checksum delivered only inside the same archive is not
 publisher authentication. With this independently trusted bootstrap:
 
@@ -36,6 +36,13 @@ publisher authentication. With this independently trusted bootstrap:
 
 The outer trusted hash is checked before extraction or image loading. Absolute
 paths, traversal, symlinks and special archive members are rejected. Imported
+public file modes are preserved without restoring archive owners or privileged
+mode bits, including the PostgreSQL bootstrap executed by UID70. Before any
+extraction or image load, the local destination reserves one archive working set
+plus512MiB and the Docker filesystem reserves two plus512MiB; a shared filesystem
+reserves their combined three working sets plus512MiB. Run the importer on the
+actual target host so its Docker root filesystem can be measured. These bounded
+preflight reserves do not replace ongoing disk-capacity monitoring. Imported
 image IDs and platforms must match; reference names alone are insufficient.
 Never repackage a modified directory while retaining old evidence. A new evidence
 wrapper may reference the original manifest without rebuilding its images.
@@ -114,6 +121,27 @@ record and disk usage. `logs` shows bounded recent output; Docker logging rotate
 at10MiB times3. `down` stops without deleting persistent volumes. There is no
 test/prod reset or backup/restore operation.
 
+Standalone application maintenance uses the packaged same-version CLI with the
+same explicit input, identity, trusted manifest, image verification and locks:
+
+```bash
+./materials/scripts/omega-release.sh --env test --input /etc/omega/test-a \
+  --version 1.0.0-rc1 --manifest-sha256 TRUSTED_MANIFEST_SHA256 -- --json doctor
+```
+
+The command after `--` is `version`, `config validate`, `doctor`, `health check`,
+`db status`, `db migrate` or `data ensure`; CLI exit codes are preserved. Config
+paths come only from the selected instance. Database diagnostics and writes use
+the migration role; HTTP readiness uses a fresh runtime-role CLI container in the
+selected running API's network namespace. No admin credential is mounted.
+Maintenance writes check any existing API's actual version and real database
+state, enable maintenance and stop only a previously running API. They restart
+only that API after success; an already stopped API remains stopped with
+maintenance enabled. A failure preserves maintenance/data for diagnosis and
+retry. Standalone commands never start the database or initialize an HTTP server;
+first deployment remains the explicit `deploy` sequence. Production requires all
+four options and matching prod configuration/database identity, just like test.
+
 For certificate renewal replace original TLS inputs with complete valid files and
 invoke `tls-reload` using the current release and same four explicit options.
 Preflight validates hostname/key/expiry, stages the consumer key and performs a
@@ -135,11 +163,13 @@ docker build --platform linux/amd64 -t omega-acceptance-dind:29.8.0 -f infra/acc
   /output/previous.tar PREVIOUS_ARCHIVE_SHA PREVIOUS_VERSION PREVIOUS_MANIFEST_SHA
 ```
 
-The final four arguments are optional, but cross-version rollback remains
-unexecuted without them. The script owns a unique privileged **acceptance daemon**
+The final four arguments are required and must identify a distinct old version,
+archive and manifest; otherwise the drill refuses before running any suite. The script owns a unique privileged **acceptance daemon**
 with networknone and its own Docker data volume, never the host socket. It mounts
 only archives and operator fixtures, records initially empty target state and
-blocked daemon/application egress, then deploys test and prod with identical
+blocked daemon/application egress. A Docker-enabled UID1000 imports the real
+bundle and cold-deploys test, proving ordinary-user archive permissions. It then
+deploys test and prod with identical
 images. It exercises corruption, missing/retagged image refusal, input ownership,
 actual readiness/migration SQL failures, maintenance retention, compatible and
 incompatible rollback, cancellation/locking, separate concurrent instances and TLS

@@ -4,16 +4,18 @@ set -Eeuo pipefail
 umask 077
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
 source "$ROOT/scripts/release-common.sh"
-[ "$#" = 6 ] || [ "$#" = 10 ] || fail 'usage: accept-release.sh ARCHIVE ARCHIVE_SHA VERSION MANIFEST_SHA HARNESS_IMAGE NEW_EVIDENCE_DIR [OLD_ARCHIVE OLD_ARCHIVE_SHA OLD_VERSION OLD_MANIFEST_SHA]'
+[ "$#" = 10 ] || fail 'usage: accept-release.sh ARCHIVE ARCHIVE_SHA VERSION MANIFEST_SHA HARNESS_IMAGE NEW_EVIDENCE_DIR [OLD_ARCHIVE OLD_ARCHIVE_SHA OLD_VERSION OLD_MANIFEST_SHA]'
 ARCHIVE=$1; ARCHIVE_SHA=$2; VERSION=$3; MANIFEST_SHA=$4; HARNESS=$5; EVIDENCE=$6
-OLD_ARCHIVE=${7:-}; OLD_SHA=${8:-}; OLD_VERSION=${9:-}; OLD_MANIFEST=${10:-}
+OLD_ARCHIVE=$7; OLD_SHA=$8; OLD_VERSION=$9; OLD_MANIFEST=${10}
+[ -f "$OLD_ARCHIVE" ] && [ -n "$OLD_SHA" ] && [ -n "$OLD_VERSION" ] && [ -n "$OLD_MANIFEST" ] || fail 'actual rollback requires a complete old candidate'
+[ "$OLD_VERSION" != "$VERSION" ] && [ "$OLD_SHA" != "$ARCHIVE_SHA" ] && [ "$OLD_MANIFEST" != "$MANIFEST_SHA" ] || fail 'rollback candidate must have a distinct version, archive and manifest'
 [ ! -e "$EVIDENCE" ] || fail 'use a new evidence directory'
 prerequisites
 docker image inspect --platform linux/amd64 "$HARNESS" >/dev/null || fail 'prebuild the acceptance harness online first'
 mkdir -p "$EVIDENCE/operator/scripts"
 EVIDENCE=$(cd "$EVIDENCE" && pwd -P)
 ARCHIVE=$(cd "$(dirname "$ARCHIVE")" && pwd -P)/$(basename "$ARCHIVE")
-cp "$ROOT/scripts/"{import-release,release-common}.sh "$EVIDENCE/operator/scripts/"
+cp "$ROOT/scripts/"{import-release,release-common,process}.sh "$EVIDENCE/operator/scripts/"
 cp "$ROOT/scripts/accept-release-target.sh" "$EVIDENCE/operator/target.sh"
 cp "$ROOT/infra/acceptance/scan_secrets.py" "$EVIDENCE/operator/scan_secrets.py"
 RUN="omega-offline-$(date +%s)-$$"; DATA="$RUN-data"; CHILD=''
