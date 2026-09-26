@@ -1,0 +1,5 @@
+# Environment differences are explicit complete inputs; images remain unchanged.
+services:
+  api:
+    labels:
+      org.omega.environment: test
