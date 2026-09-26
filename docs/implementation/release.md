@@ -119,6 +119,36 @@ invoke `tls-reload` using the current release and same four explicit options.
 Preflight validates hostname/key/expiry, stages the consumer key and performs a
 controlled edge recreation to refresh bind-mounted inodes, followed by TLS smoke.
 Use planned maintenance; this is not zero-downtime reload.
+Replace original certificate/key files atomically. Changed staged TLS keys also
+use atomic replacement, preserving the old running edge's certificate/key pair
+if a subsequent preflight fails; unchanged credentials retain their inodes.
+
+## Repeatable isolated offline drill
+
+Build the acceptance-only harness while online, then run the drill with one exact
+candidate archive/hash/version/manifest and a new evidence directory:
+
+```bash
+docker build --platform linux/amd64 -t omega-acceptance-dind:29.8.0 -f infra/acceptance/Dockerfile .
+./scripts/accept-release.sh /output/omega.tar ARCHIVE_SHA VERSION MANIFEST_SHA \
+  omega-acceptance-dind:29.8.0 /output/new-evidence \
+  /output/previous.tar PREVIOUS_ARCHIVE_SHA PREVIOUS_VERSION PREVIOUS_MANIFEST_SHA
+```
+
+The final four arguments are optional, but cross-version rollback remains
+unexecuted without them. The script owns a unique privileged **acceptance daemon**
+with networknone and its own Docker data volume, never the host socket. It mounts
+only archives and operator fixtures, records initially empty target state and
+blocked daemon/application egress, then deploys test and prod with identical
+images. It exercises corruption, missing/retagged image refusal, input ownership,
+actual readiness/migration SQL failures, maintenance retention, compatible and
+incompatible rollback, cancellation/locking, separate concurrent instances and TLS
+renewal. Known private fixture markers are scanned across package files, logs,
+image config/history and raw/decompressed exported layers without printing them.
+Success removes only its owned daemon/volume; failure retains the owned data
+volume and records its exact name for inspection. The harness source and captured
+command log make the drill repeatable. It does not claim native platform support
+when run through emulation, nor real production delivery.
 
 ## Evidence boundaries
 
