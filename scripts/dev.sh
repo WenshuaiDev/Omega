@@ -228,7 +228,7 @@ case "$COMMAND" in
     STAGE=system-metadata
     oneoff migrate --config /etc/omega/app.yaml data ensure
     STAGE=long-running-services
-    run 240 "${COMPOSE[@]}" up -d --no-build --wait --wait-timeout 210 api web console edge
+    run 240 "${COMPOSE[@]}" up -d --no-build --force-recreate --wait --wait-timeout 210 api web console edge
     STAGE=external-smoke
     for path in /web/ /console/ /web/runtime-config.json /console/runtime-config.json /api/v1/ping; do
       run 40 curl --retry 8 --retry-all-errors --retry-delay 1 --max-time 3 --fail --silent --show-error "http://127.0.0.1:$HTTP_PORT$path" -o /dev/null
