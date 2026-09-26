@@ -1575,6 +1575,7 @@ __metadata:
     "@types/node": "npm:24.13.6"
     eslint: "npm:10.11.0"
     globals: "npm:17.12.0"
+    playwright-core: "npm:1.63.0"
     prettier: "npm:3.9.9"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.70.1"
@@ -1647,6 +1648,15 @@ __metadata:
   version: 4.0.7
   resolution: "picomatch@npm:4.0.7"
   checksum: 10c0/beb6ae02c43ae44e84883b90830196d9046b1726ead292adcf7f57945e0bb0d992d68563d87e03b484b6f3c9a5c6defda7523477f047d7f0e663f126cc01787f
+  languageName: node
+  linkType: hard
+
+"playwright-core@npm:1.63.0":
+  version: 1.63.0
+  resolution: "playwright-core@npm:1.63.0"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/39c1ebae4029ca2e9371e00a5588d962038e24b6e0bdb7d0d27374dde04838f349b83ae0c8b3b648653d0935cba7fb9011f1201adaab9dd0db7801ad6c75e9aa
   languageName: node
   linkType: hard
 
