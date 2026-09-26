@@ -123,6 +123,11 @@ def main():
         images()
     elif command == "toolchain":
         toolchain()
+    elif command == "image-users":
+        reports = Path(sys.argv[2])
+        users = dict(line.split("\t", 1) for line in (reports / "image-users.tsv").read_text().splitlines())
+        for environment in ["test", "prod"]:
+            model(environment, json.loads((reports / f"compose-{environment}.json").read_text()), image_users=users)
     elif command == "cli-version":
         value = json.loads(Path(sys.argv[2]).read_text())
         require(value["version"] == "quality" and value["commit"] == sys.argv[3], "CLI binary version differs from release labels")

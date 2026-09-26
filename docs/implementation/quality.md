@@ -54,3 +54,31 @@ existing API process test's literal `postgres:admin-secret` DSN replacement.
 The runner now honors that existing test fixture. Another initial check omitted
 Compose profiles; it failed required-service validation and was corrected to
 render `--profile '*'`. Neither failed attempt is recorded as a pass.
+
+## Final policy and rejection evidence
+
+After sharing `infra/tools/compose_policy.py` with offline deployment, reran the
+complete check at baseline `cce6725439b9140b0beb319bf07f12f4153f4f5f` plus the
+inherited-image metadata checks: `/tmp/omega21-policy-final`, exit0. This final
+run verifies actual `.Config.User` metadata for inherited formal application
+users, not only Compose user overrides. Four policy regression tests include
+explicit/inherited root, extra capabilities/devices, unexpected host paths,
+source/build/dev commands and inline credentials. Three models, all workspace
+checks/tests and five actual Linux amd64 production builds passed again.
+
+Additional entry-point behavior was measured in disposable instances:
+
+- `/tmp/omega21-final-test`: exit0 with PATH shims rejecting host go, node, yarn,
+  npm, corepack, python, python3 and jq; no shim was invoked. The final polling
+  timeout implementation also avoids orphaned long-sleep watchdog processes.
+- `/tmp/omega21-negative-go`: inserted invalid Go test syntax in a detached
+  fixture checkout; uniform test entry stopped at go-test, exit1.
+- `/tmp/omega21-negative-lock`: changed a fixture package manifest without lock
+  update; immutable install emitted YN0028 and stopped at frontend-test, exit1.
+  SHA-256 of the original fixture yarn.lock remained unchanged.
+- `/tmp/omega21-timeout-evidence`: `--timeout 1` stopped an actual Go task with
+  exit5, retained diagnostics, and cleaned only that run's containers and volume.
+
+The detached negative fixture was restored and removed. Test networks, containers,
+source volumes and unique image tags were removed by the runner. Reports remain
+outside the checkout; browser/offline/native acceptance is tracked separately.

@@ -151,6 +151,7 @@ if [ "$MODE" = check ]; then
     run "build-$key" docker build "${BUILD[@]}" "$ROOT"
     [ "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$tag")" = quality ] || { echo 'wrong production version label' >&2; exit 3; }
     [ "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$tag")" = "$COMMIT" ] || { echo 'wrong production commit label' >&2; exit 3; }
+    printf 'omega-%s:quality\t%s\n' "$key" "$(docker image inspect --format '{{.Config.User}}' "$tag")" >> "$OUTPUT/image-users.tsv"
     docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}} {{json .Config.Labels}}' "$tag" >> "$OUTPUT/production-images.txt"
     [ "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag")" = "$PLATFORM" ] || { echo 'wrong production image platform' >&2; exit 3; }
     if [ "$key" = api ]; then
@@ -159,6 +160,7 @@ if [ "$MODE" = check ]; then
       run cli-version-check docker run "${COMMON[@]}" --network none --mount "type=bind,src=$OUTPUT,dst=/reports,readonly" "$TOOLS" python scripts/quality/model_check.py cli-version /reports/binary-versions.log "$COMMIT"
     fi
   done < "$TEMP/images"
+  run inherited-image-users docker run "${COMMON[@]}" --network none --mount "type=bind,src=$OUTPUT,dst=/reports,readonly" "$TOOLS" python scripts/quality/model_check.py image-users /reports
 fi
 run unchanged-dependencies docker run "${COMMON[@]}" --network none --mount "type=bind,src=$ROOT,dst=/source,readonly" "$TOOLS" python scripts/quality/model_check.py unchanged
 STAGE=complete
