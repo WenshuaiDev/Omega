@@ -1,0 +1,10 @@
+.omega/
+node_modules/
+**/node_modules/
+.yarn/install-state.gz
+.yarn/cache/
+**/dist/
+artifacts/
+.DS_Store
+
+.yarn/global/

@@ -1,0 +1,6 @@
+source_commit=bbd6a3309a32991eb46d55a873635da14a05073c
+Darwin arm64
+client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64
+Docker Compose version v5.5.1
+Browser runs through Nginx in its network namespace; host published ingress is checked separately.
+This suite alone does not complete native Linux amd64 acceptance #20.

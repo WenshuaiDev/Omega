@@ -1,0 +1,77 @@
+{
+  "description": "A committed isolated fixture removed the required unique HMR source anchor. Both actual pages were healthy, then HMR assertion failed and dispatcher exited 1. No passing HMR result was fabricated.",
+  "records": {
+    "platform.txt": [
+      "source_commit=a017d8815c356bfbf9a89497426a0c2143788767",
+      "requested_suite=browser",
+      "started_at=2026-09-26T02:27:14Z",
+      "Darwin arm64",
+      "server=29.8.0/linux/arm64",
+      "archive_sha256=",
+      "manifest_sha256="
+    ],
+    "result.txt": [
+      "local_run_exit=1",
+      "spec_complete=false",
+      "native_platform=separate-pending-20"
+    ],
+    "results.tsv": [
+      "suite\tstatus\texit\tevidence",
+      "browser\tFAIL\t1\tbrowser/"
+    ],
+    "browser/platform.txt": [
+      "source_commit=a017d8815c356bfbf9a89497426a0c2143788767",
+      "Darwin arm64",
+      "client=29.8.0/darwin/arm64 server=29.8.0/linux/arm64",
+      "Docker Compose version v5.5.1",
+      "Browser runs through Nginx in its network namespace; host published ingress is checked separately.",
+      "This suite alone does not complete native Linux amd64 acceptance #20."
+    ],
+    "browser/result.txt": [
+      "stage=browser-scenarios",
+      "exit=1",
+      "source=a017d8815c356bfbf9a89497426a0c2143788767",
+      "native_platform=separate-pending-20"
+    ],
+    "browser/results.json": {
+      "exit_code": 1,
+      "cases": [
+        {
+          "case": "web-healthy",
+          "status": "PASS",
+          "finished_at": "2026-09-26T02:28:08.269Z",
+          "detail": "Actual React UI and DB-backed API status rendered through Nginx."
+        },
+        {
+          "case": "console-healthy",
+          "status": "PASS",
+          "finished_at": "2026-09-26T02:28:08.672Z",
+          "detail": "Actual React UI and DB-backed API status rendered through Nginx."
+        },
+        {
+          "case": "both-apps-hmr",
+          "status": "FAIL",
+          "finished_at": "2026-09-26T02:28:08.672Z",
+          "detail": "HMR source anchor must occur exactly once"
+        }
+      ],
+      "events": [
+        {
+          "evidence": "web-initial",
+          "app": "web"
+        },
+        {
+          "evidence": "console-initial",
+          "app": "console"
+        }
+      ],
+      "restored": {
+        "/fixtures/App.tsx": true,
+        "/fixtures/web.json": true,
+        "/fixtures/console.json": true
+      },
+      "entry_kind": "actual edge network namespace; host published ingress tested separately",
+      "native_platform_acceptance": "pending #20 unless a separate complete native run is recorded"
+    }
+  }
+}

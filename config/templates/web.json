@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "appId": "web",
+  "environment": "test",
+  "version": "replace-release-version",
+  "apiBaseUrl": "/api"
+}

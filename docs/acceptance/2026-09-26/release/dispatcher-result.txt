@@ -1,0 +1,3 @@
+local_run_exit=0
+spec_complete=false
+native_platform=separate-pending-20

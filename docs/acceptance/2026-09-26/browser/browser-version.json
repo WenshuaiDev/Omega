@@ -1,0 +1,7 @@
+{
+  "playwright": "1.63.0",
+  "chromium": "153.0.8010.12",
+  "node": "v24.20.0",
+  "platform": "linux",
+  "arch": "arm64"
+}

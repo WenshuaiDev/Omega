@@ -1,0 +1,3 @@
+exit=0
+version=0.1.0-issue13-rc7
+manifest=341fc4435b8cb914c317bb446ddd8a972ce267299502a86446f9ba5c38c5de9e

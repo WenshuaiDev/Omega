@@ -1,0 +1,41 @@
+{
+  "source_commit": "bbd6a3309a32991eb46d55a873635da14a05073c",
+  "project": "omega-dev-7ba7ee0d915d",
+  "checks": [
+    {
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--filter",
+        "label=com.docker.compose.project=omega-dev-7ba7ee0d915d"
+      ],
+      "exit": 0,
+      "remaining_ids": []
+    },
+    {
+      "argv": [
+        "docker",
+        "volume",
+        "ls",
+        "-q",
+        "--filter",
+        "label=com.docker.compose.project=omega-dev-7ba7ee0d915d"
+      ],
+      "exit": 0,
+      "remaining_ids": []
+    },
+    {
+      "argv": [
+        "docker",
+        "network",
+        "ls",
+        "-q",
+        "--filter",
+        "label=com.docker.compose.project=omega-dev-7ba7ee0d915d"
+      ],
+      "exit": 0,
+      "remaining_ids": []
+    }
+  ]
+}

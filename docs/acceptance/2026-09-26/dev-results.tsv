@@ -1,0 +1,17 @@
+case	status	started_at	finished_at	evidence	detail
+OMEGA-01-02-03-29-cold	PASS	2026-09-26T02:08:19Z	2026-09-26T02:09:10Z	OMEGA-01-02-03-29-cold/	Project-cold start from source path with spaces; all five services and public paths; host runtimes forbidden. Shared base cache retained.
+OMEGA-06-repeat	PASS	2026-09-26T02:09:10Z	2026-09-26T02:09:39Z	OMEGA-06-repeat/	Repeated real startup preserves inputs, secret hashes, installation timestamp, and releases lock.
+OMEGA-07-missing-credential	PASS	2026-09-26T02:09:39Z	2026-09-26T02:10:08Z	OMEGA-07-missing-credential/	Existing volume plus missing credential refuses regeneration; same startup succeeds after restoring original.
+OMEGA-08-09-14-dependency	PASS	2026-09-26T02:10:08Z	2026-09-26T02:10:51Z	OMEGA-08-09-14-dependency/	Actual immutable dependency failure, unchanged lock, original identity preserved, exact startup retry recovers.
+OMEGA-05-recompile	PASS	2026-09-26T02:10:51Z	2026-09-26T02:10:54Z	OMEGA-05-recompile/	Visible source change rebuilt; invalid Go removed old API; compiler diagnosis and recovery observed. No shared Go module exists.
+OMEGA-15-pollution	PASS	2026-09-26T02:10:54Z	2026-09-26T02:10:55Z	OMEGA-15-pollution/	Conflicting inherited Compose/controlled Omega variables did not alter explicit target.
+OMEGA-16-config	PASS	2026-09-26T02:10:55Z	2026-09-26T02:11:03Z	OMEGA-16-config/	Unknown configuration rejected before application start; valid original restored. Strict CLI/Secret cases additionally covered by API process suite.
+OMEGA-19-proxy-rediscovery	PASS	2026-09-26T02:11:03Z	2026-09-26T02:11:09Z	OMEGA-19-proxy-rediscovery/	API changed actual app-network IP while edge container unchanged; old IP occupied by scoped fixture; external ping recovered.
+OMEGA-11-down-preserves	PASS	2026-09-26T02:11:09Z	2026-09-26T02:11:44Z	OMEGA-11-down-preserves/	Normal down retained database volume and exact credentials/identity after restart.
+OMEGA-08-09-migration	PASS	2026-09-26T02:11:44Z	2026-09-26T02:12:40Z	OMEGA-08-09-migration/	Real PostgreSQL SQL syntax error rolled back migration and journaled failure; same dev entry recovered without replacing volume.
+OMEGA-10-isolation	PASS	2026-09-26T02:12:40Z	2026-09-26T02:12:41Z	OMEGA-10-isolation/	Different instances/projects/ports/volumes/credentials; A credential cannot authenticate to B while B credential succeeds; simultaneous public health.
+OMEGA-37-concurrency-cancel	PASS	2026-09-26T02:12:41Z	2026-09-26T02:12:44Z	OMEGA-37-concurrency-cancel/	Real blocked maintenance excludes concurrent caller (6), TERM exits130, releases owned locks/tasks, and retry succeeds.
+OMEGA-12-reset-boundary	PASS	2026-09-26T02:12:44Z	2026-09-26T02:12:51Z	OMEGA-12-reset-boundary/	Wrong confirmation/prod inputs and actual prod DB identity refused; exact A reset deleted only A; B containers/data/health unchanged.
+OMEGA-16-log-secret-audit	PASS	2026-09-26T02:12:51Z	2026-09-26T02:12:51Z	OMEGA-16-log-secret-audit/	All six generated credentials absent from captured command stdout/stderr; audit emits filenames only.
+cleanup	PASS	2026-09-26T02:12:51Z	2026-09-26T02:12:54Z	cleanup/	All harness database/cache volumes reset through actual selected-instance entry points; no denied host runtime ran.
+pending-cross-scope	NOT_EXECUTED	2026-09-26T02:12:54Z	2026-09-26T02:12:54Z	pending-cross-scope/	OMEGA04 browser HMR, OMEGA13 all-workspace quality checks, full OMEGA16 artifact secret audit and native OMEGA38 belong to companion evidence; this report does not mark them passed.

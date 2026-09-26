@@ -1,0 +1,14 @@
+environment: test
+instance_id: replace-instance
+http:
+  address: ':8080'
+  shutdown_timeout: 10s
+database:
+  host: db
+  port: 5432
+  name: omega
+  user: omega_migrator
+  password_file: /run/secrets/db_password
+  sslmode: disable
+  connect_timeout: 5s
+operation_timeout: 60s

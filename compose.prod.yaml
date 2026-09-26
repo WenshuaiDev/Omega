@@ -1,0 +1,5 @@
+services:
+  api:
+    labels:
+      org.omega.environment: prod
+    mem_limit: 1g

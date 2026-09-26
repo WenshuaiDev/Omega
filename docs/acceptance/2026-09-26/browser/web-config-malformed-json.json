@@ -1,0 +1,24 @@
+{
+  "app": "web",
+  "requests": [
+    "http://127.0.0.1:8080/web/",
+    "http://127.0.0.1:8080/web/@vite/client",
+    "http://127.0.0.1:8080/web/src/main.ts",
+    "http://127.0.0.1:8080/web/@react-refresh",
+    "http://127.0.0.1:8080/web/@fs/workspace/packages/reference-app/src/bootstrap.ts",
+    "http://127.0.0.1:8080/web/@fs/workspace/packages/reference-app/src/style.css",
+    "http://127.0.0.1:8080/web/@fs/workspace/node_modules/vite/dist/client/env.mjs",
+    "http://127.0.0.1:8080/web/@fs/workspace/packages/reference-app/src/config.ts",
+    "http://127.0.0.1:8080/web/node_modules/.vite/deps/jsonc-parser.js",
+    "http://127.0.0.1:8080/web/runtime-config.json"
+  ],
+  "sockets": [
+    "ws://127.0.0.1:8080/web/hmr"
+  ],
+  "frames": [
+    "{\"type\":\"connected\"}"
+  ],
+  "navigations": 1,
+  "errors": [],
+  "url": "http://127.0.0.1:8080/web/"
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "Name": "omega-offline-migration-db-1",
+    "Service": "db",
+    "Image": "sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a",
+    "State": "running",
+    "Health": "healthy",
+    "ExitCode": 0
+  }
+]

@@ -1,0 +1,14 @@
+ version |                   result
+---------+--------------------------------------------
+       1 | database operation failed (SQLSTATE P0001)
+(1 row)
+
+ to_regclass
+-------------
+
+(1 row)
+
+ count
+-------
+     0
+(1 row)

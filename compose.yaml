@@ -1,0 +1,145 @@
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+x-app: &app
+  restart: unless-stopped
+  init: true
+  read_only: true
+  security_opt: ['no-new-privileges:true']
+  cap_drop: [ALL]
+  tmpfs: ['/tmp:rw,nosuid,nodev,size=128m']
+  logging: *logging
+  mem_limit: 512m
+  pids_limit: 256
+services:
+  db:
+    image: ${OMEGA_DB_IMAGE:-postgres:17.10-alpine}
+    environment:
+      POSTGRES_DB: omega
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/admin_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/.runtime-secrets/db-admin
+        target: /run/secrets/admin_password
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/.runtime-secrets/db-migrator
+        target: /run/secrets/migrator_password
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/.runtime-secrets/db-runtime
+        target: /run/secrets/runtime_password
+        read_only: true
+      - type: bind
+        source: ${OMEGA_SOURCE_DIR}/infra/db/10-omega.sh
+        target: /docker-entrypoint-initdb.d/10-omega.sh
+        read_only: true
+    networks: [data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d omega']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+    shm_size: 128m
+    mem_limit: 768m
+    pids_limit: 256
+    logging: *logging
+    stop_grace_period: 30s
+  api:
+    <<: *app
+    image: ${OMEGA_API_IMAGE}
+    networks: [app, data]
+    volumes:
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/api.yaml
+        target: /etc/omega/app.yaml
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/.runtime-secrets/api-runtime
+        target: /run/secrets/db_password
+        read_only: true
+    command: [--config, /etc/omega/app.yaml]
+    stop_grace_period: 30s
+    healthcheck:
+      test: [CMD, omega, --config, /etc/omega/app.yaml, health, check]
+      interval: 5s
+      timeout: 8s
+      retries: 20
+      start_period: 10s
+  migrate:
+    <<: *app
+    image: ${OMEGA_API_IMAGE}
+    profiles: [tools]
+    restart: 'no'
+    networks: [data]
+    entrypoint: [omega]
+    command: [--config, /etc/omega/app.yaml, db, status]
+    volumes:
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/migration.yaml
+        target: /etc/omega/app.yaml
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/.runtime-secrets/api-migrator
+        target: /run/secrets/db_password
+        read_only: true
+  web:
+    <<: *app
+    image: ${OMEGA_WEB_IMAGE}
+    networks: [app]
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/web/']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  console:
+    <<: *app
+    image: ${OMEGA_CONSOLE_IMAGE}
+    networks: [app]
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/console/']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  edge:
+    <<: *app
+    image: ${OMEGA_EDGE_IMAGE}
+    networks: [app]
+    volumes:
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/edge/nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/edge
+        target: /etc/omega/edge
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/web.json
+        target: /etc/omega/public/web.json
+        read_only: true
+      - type: bind
+        source: ${OMEGA_INPUT_DIR}/console.json
+        target: /etc/omega/public/console.json
+        read_only: true
+    healthcheck:
+      test: [CMD-SHELL, 'nginx -t -q && kill -0 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+networks:
+  app: {}
+  data:
+    internal: true
+volumes:
+  db_data:
+    labels:
+      org.omega.instance: ${OMEGA_INSTANCE_ID}
+      org.omega.environment: ${OMEGA_ENVIRONMENT}
+      org.omega.input: ${OMEGA_INPUT_DIR}

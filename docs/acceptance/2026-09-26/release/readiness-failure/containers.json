@@ -1,0 +1,42 @@
+[
+  {
+    "Name": "omega-offline-test-api-1",
+    "Service": "api",
+    "Image": "sha256:1e3f777963f7341f90b34402f9cca3e41afdb97566e57376253f20211d9933d0",
+    "State": "restarting",
+    "Health": "starting",
+    "ExitCode": 0
+  },
+  {
+    "Name": "omega-offline-test-console-1",
+    "Service": "console",
+    "Image": "sha256:a83669263ac433ab648a4582de6586433ac721beaf921e9b6c9bd585da48904b",
+    "State": "running",
+    "Health": "starting",
+    "ExitCode": 0
+  },
+  {
+    "Name": "omega-offline-test-db-1",
+    "Service": "db",
+    "Image": "sha256:af194ccf3e2d7fe367012c7b88ce8b816c5c889b18a5b316799a1f0d7eac746a",
+    "State": "running",
+    "Health": "healthy",
+    "ExitCode": 0
+  },
+  {
+    "Name": "omega-offline-test-edge-1",
+    "Service": "edge",
+    "Image": "sha256:a4bbac13dc2bcf9a5c5dbc7e45cc57b3453a4d5adf49035dce1c59689ef72b68",
+    "State": "running",
+    "Health": "healthy",
+    "ExitCode": 0
+  },
+  {
+    "Name": "omega-offline-test-web-1",
+    "Service": "web",
+    "Image": "sha256:934a038208b8c62db3225f17854dad3fc5cc3c7fe081109c870a1694730cb349",
+    "State": "running",
+    "Health": "starting",
+    "ExitCode": 0
+  }
+]
