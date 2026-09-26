@@ -8,6 +8,7 @@ import ssl
 import stat
 import sys
 from pathlib import Path
+from compose_policy import validate_model
 
 
 def run(args):
@@ -30,15 +31,8 @@ def run(args):
             assert value["version"] == args[2], "public configuration version differs from explicit release"
     elif command == "model":
         model = json.loads(Path(args[1]).read_text())
-        for name, service in model["services"].items():
-            assert not service.get("build") and service.get("pull_policy") == "never", f"{name}: build/pull policy"
-            assert service.get("platform") == "linux/amd64", f"{name}: platform"
-            assert not service.get("privileged"), f"{name}: privileged"
-            assert name == "edge" or not service.get("ports"), f"{name}: exposed ports"
-            for mount in service.get("volumes", []):
-                assert "docker.sock" not in mount.get("source", ""), "Docker socket forbidden"
-                assert mount.get("target") != "/workspace", "source mounts forbidden"
-        print("formal Compose model valid")
+        image_users = dict(line.split("\t", 1) for line in Path(args[1]).with_name("image-users.tsv").read_text().splitlines())
+        validate_model(args[2], model, args[3], args[4], image_users)
     elif command == "smoke":
         root, domain, version, environment = Path(args[1]), args[2], args[3], args[4]
         context = ssl.create_default_context(cafile=str(root / "tls/cert.pem"))

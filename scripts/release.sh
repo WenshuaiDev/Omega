@@ -121,7 +121,10 @@ run 120 docker run --rm --pull never --name "$TASK" --network none --mount "type
 TASK=''
 run 30 docker run --rm --pull never --network none --mount "type=bind,src=$INPUT,dst=/inputs,readonly" "$TOOLS_IMAGE" python /tools/release.py input-version /inputs "$VERSION"
 compose --profile '*' config --format json > "$RUN_DIR/compose.json"
-run 30 docker run --rm --pull never --network none --mount "type=bind,src=$RUN_DIR,dst=/evidence,readonly" "$TOOLS_IMAGE" python /tools/release.py model /evidence/compose.json
+for i in "${!IMAGE_ROLES[@]}"; do
+  printf '%s\t%s\n' "${IMAGE_IDS[$i]}" "$(bounded 15 docker image inspect --format '{{.Config.User}}' "${IMAGE_IDS[$i]}")"
+done > "$RUN_DIR/image-users.tsv"
+run 30 docker run --rm --pull never --network none --mount "type=bind,src=$RUN_DIR,dst=/evidence,readonly" "$TOOLS_IMAGE" python /tools/release.py model /evidence/compose.json "$ENVIRONMENT" "$INPUT" "$MATERIALS"
 phase candidate-config
 oneoff config validate > "$RUN_DIR/config.json"
 if [ "$COMMAND" = tls-reload ]; then
